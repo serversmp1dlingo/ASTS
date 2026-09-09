@@ -311,7 +311,12 @@
 "use strict";
 
 /* ================= CONFIG ================= */
-const SUBJECT_ORDER = ["Toleransi dan Dalil Naqli","Iman kepada Kitab-Kitab Allah","Meneladani Sifat Wajib Rasul"];
+const SUBJECT_ORDER = [
+  "Pentingnya Iman kepada Allah",
+  "Asmaul Husna",
+  "Sifat Wajib, Mustahil, dan Jaiz Allah",
+  "Hukum Bacaan Alif Lam"
+];
 const DURATION_SEC = 90*60;
 const VALID_TOKEN = "PAI7EJ";
 // TODO(guru): paste the Web App URL from your deployed Google Apps Script (see Code.gs) here:
@@ -689,6 +694,11 @@ function finishExam(autoSubmit){
   SUBJECT_ORDER.forEach(s=>perSubject[s]={correct:0,total:0});
   let totalCorrect=0;
   examQuestions.forEach(q=>{
+    // Pastikan materi terinisialisasi jika tidak ada di SUBJECT_ORDER
+    if(!perSubject[q.subject]){
+      perSubject[q.subject] = {correct:0, total:0};
+      if(!SUBJECT_ORDER.includes(q.subject)) SUBJECT_ORDER.push(q.subject);
+    }
     perSubject[q.subject].total++;
     if(isCorrect(q)){ perSubject[q.subject].correct++; totalCorrect++; }
   });

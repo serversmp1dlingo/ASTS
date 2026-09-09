@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Asesmen Sumatif Tengah Semester — Ilmu Pengetahuan Sosial — SMP N 1 Dlingo</title>
-<link rel="icon" type="image/png" href="../../assets/img/logo-smpn1dlingo.png">
+<link rel="icon" type="image/png" href="LOGO_SMP.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
@@ -189,10 +189,8 @@
 <!-- ============ START / INSTRUCTIONS SCREEN ============ -->
 <div id="screen-start">
   <div class="start-card">
-  <a href="../../kelas-7.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--gray);margin-bottom:14px;">&larr; Menu Kelas 7</a>
-  <div class="school-header">
     <div class="school-header">
-      <img src="../../assets/img/logo-smpn1dlingo.png" alt="Logo Sekolah">
+      <img src="LOGO_SMP.png" alt="Logo Sekolah">
       <div class="stxt"><b>SMP N 1 DLINGO BANTUL</b><span>Asesmen Sumatif Tengah Semester · Ilmu Pengetahuan Sosial · TP 2026/2027</span></div>
     </div>
     <h1>📝 Asesmen Sumatif Tengah Semester — Ilmu Pengetahuan Sosial</h1>
@@ -248,7 +246,7 @@
 <div id="screen-exam">
   <div id="topbar">
     <button id="panelToggle">☰ Soal</button>
-   <div class="brand"><img src="../../assets/img/logo-smpn1dlingo.png" alt="Logo"><span>ASTS ILMU PENGETAHUAN SOSIAL · TP 2026/2027<small class="who" id="brandStudent"></small></span></div>
+    <div class="brand"><img src="LOGO_SMP.png" alt="Logo"><span>ASTS ILMU PENGETAHUAN SOSIAL · TP 2026/2027<small class="who" id="brandStudent"></small></span></div>
     <div id="violationBadge">⚠ Pelanggaran: <span id="violCount">0</span></div>
     <div id="timerBox">90:00</div>
   </div>
@@ -281,7 +279,7 @@
 <div id="screen-result">
   <div class="result-card">
     <div class="school-header">
-     <img src="../../assets/img/logo-smpn1dlingo.png" alt="Logo Sekolah">
+      <img src="LOGO_SMP.png" alt="Logo Sekolah">
       <div class="stxt"><b>SMP N 1 DLINGO BANTUL</b><span>Asesmen Sumatif Tengah Semester · Ilmu Pengetahuan Sosial · TP 2026/2027</span></div>
     </div>
     <h1>✅ Hasil Ujian</h1>
@@ -371,17 +369,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const opt = document.createElement('option');
     opt.value = kelas; opt.textContent = kelas;
     selKelas.appendChild(opt);
-  const params = new URLSearchParams(window.location.search);
-  const pKelas = params.get('kelas');
-  const pNama = params.get('nama');
-  if(pKelas && STUDENTS[pKelas]){
-    selKelas.value = pKelas;
-    selKelas.dispatchEvent(new Event('change'));
-    if(pNama && STUDENTS[pKelas].includes(pNama)){
-      document.getElementById('inputNama').value = pNama;
-    }
-    document.querySelector('.tab-btn[data-tab="mulai"]').click();
-    document.getElementById('inputToken').focus();
   });
   selKelas.addEventListener('change',()=>{
     const selNama = document.getElementById('inputNama');

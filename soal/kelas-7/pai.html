@@ -669,19 +669,38 @@ function confirmSubmit(){
   }
   if(confirm('Semua soal telah dijawab. Kirim jawaban sekarang? Jawaban tidak dapat diubah setelah dikirim.')) finishExam(false);
 }
-function gradeMatrix(q, v){ if(!v) return false; return q.rows.every(r=>v[r.label]===r.correct); }
-function gradeMulti(q, v){
-  if(!Array.isArray(v)) return false;
-  const c = q.correct.slice().sort(); const s = v.slice().sort();
-  return c.length===s.length && c.every((x,i)=>x===s[i]);
-}
-function isCorrect(q){
+/* ---- Penilaian PARSIAL ----
+   Soal PG: 1 (benar) atau 0 (salah).
+   Soal PG Kompleks / Matrix: dinilai per-opsi/per-pernyataan, bukan semua-atau-tidak.
+   scoreFrac = (jumlah opsi/pernyataan yang cocok dengan kunci) / (jumlah opsi/pernyataan).
+   Contoh: dari 4 opsi, siswa benar menandai 3 -> scoreFrac = 0.75 (bukan 0). */
+function scoreFrac(q){
   const v = answers[q._id];
-  if(q.type==='pg') return v===q.correct;
-  if(q.type==='multi') return gradeMulti(q,v);
-  if(q.type==='matrix') return gradeMatrix(q,v);
-  return false;
+  if(q.type==='pg'){
+    return (v===q.correct) ? 1 : 0;
+  }
+  if(q.type==='multi'){
+    const n = q.options.length;
+    let matches = 0;
+    for(let i=0;i<n;i++){
+      const opt = q.options[i];
+      const correctFlag = q.correct.includes(opt);
+      const studentFlag = Array.isArray(v) && v.includes(opt);
+      if(correctFlag === studentFlag) matches++;
+    }
+    return n ? matches/n : 0;
+  }
+  if(q.type==='matrix'){
+    if(!v) return 0;
+    let matches = 0;
+    q.rows.forEach(r=>{ if(v[r.label]===r.correct) matches++; });
+    return q.rows.length ? matches/q.rows.length : 0;
+  }
+  return 0;
 }
+// isCorrect: dipakai untuk pelaporan "benar/salah" per-soal (mis. sheet Excel) — soal dianggap
+// "benar penuh" hanya jika scoreFrac mencapai 1 (semua opsi/pernyataan tepat).
+function isCorrect(q){ return scoreFrac(q) >= 0.999; }
 
 function finishExam(autoSubmit){
   examFinished = true;
@@ -690,43 +709,50 @@ function finishExam(autoSubmit){
   document.getElementById('screen-exam').style.display='none';
   document.getElementById('warnOverlay').style.display='none';
 
-  const perSubject = {};
-  SUBJECT_ORDER.forEach(s=>perSubject[s]={correct:0,total:0});
-  let totalCorrect=0;
-  examQuestions.forEach(q=>{
-    // Pastikan materi terinisialisasi jika tidak ada di SUBJECT_ORDER
-    if(!perSubject[q.subject]){
-      perSubject[q.subject] = {correct:0, total:0};
-      if(!SUBJECT_ORDER.includes(q.subject)) SUBJECT_ORDER.push(q.subject);
-    }
-    perSubject[q.subject].total++;
-    if(isCorrect(q)){ perSubject[q.subject].correct++; totalCorrect++; }
-  });
   const totalMaks = examQuestions.length;
-  const pct = Math.round((totalCorrect/totalMaks)*1000)/10;
+  const weight = totalMaks ? 100/totalMaks : 0;
+  const perSubject = {};
+  SUBJECT_ORDER.forEach(s=>perSubject[s]={score:0,max:0,total:0,penuh:0});
+  let totalScore = 0, fullCount = 0;
+  const perQuestion = [];
+  examQuestions.forEach(q=>{
+    if(!perSubject[q.subject]){ perSubject[q.subject]={score:0,max:0,total:0,penuh:0}; if(!SUBJECT_ORDER.includes(q.subject)) SUBJECT_ORDER.push(q.subject); }
+    const frac = scoreFrac(q);
+    const qScore = frac*weight;
+    totalScore += qScore;
+    if(frac>=0.999) fullCount++;
+    perSubject[q.subject].total++;
+    perSubject[q.subject].score += qScore;
+    perSubject[q.subject].max += weight;
+    if(frac>=0.999) perSubject[q.subject].penuh++;
+    perQuestion.push({q, frac, qScore});
+  });
+  totalScore = Math.round(totalScore*100)/100;
   let grade='D', gradeLabel='Perlu Bimbingan';
-  if(pct>=90){grade='A';gradeLabel='Sangat Baik';}
-  else if(pct>=75){grade='B';gradeLabel='Baik';}
-  else if(pct>=60){grade='C';gradeLabel='Cukup';}
+  if(totalScore>=90){grade='A';gradeLabel='Sangat Baik';}
+  else if(totalScore>=75){grade='B';gradeLabel='Baik';}
+  else if(totalScore>=60){grade='C';gradeLabel='Cukup';}
 
-  document.getElementById('resScore').textContent = totalCorrect+' / '+totalMaks+'  ('+pct+'%)';
-  document.getElementById('resGrade').textContent = 'Predikat '+grade+' — '+gradeLabel + (autoSubmit?' · waktu habis, jawaban terkirim otomatis':'');
+  document.getElementById('resScore').textContent = totalScore.toFixed(2)+' / 100';
+  document.getElementById('resGrade').textContent = 'Predikat '+grade+' — '+gradeLabel+' · '+fullCount+' dari '+totalMaks+' soal terjawab sempurna (penilaian bersifat parsial per opsi)' + (autoSubmit?' · waktu habis, jawaban terkirim otomatis':'');
   document.getElementById('rNama').textContent = studentName;
   document.getElementById('rKelas').textContent = studentClass;
   document.getElementById('rViol').textContent = violCount;
 
-  let tbl = '<tr><th>Materi</th><th>Benar</th><th>Total</th></tr>';
+  let tbl = '<tr><th>Materi</th><th>Skor</th><th>Maks</th></tr>';
   const detailParts = [];
   SUBJECT_ORDER.forEach(s=>{
-    tbl += '<tr><td>'+escapeHtml(s)+'</td><td>'+perSubject[s].correct+'</td><td>'+perSubject[s].total+'</td></tr>';
-    detailParts.push(s+' '+perSubject[s].correct+'/'+perSubject[s].total);
+    const sc = Math.round(perSubject[s].score*100)/100, mx = Math.round(perSubject[s].max*100)/100;
+    tbl += '<tr><td>'+escapeHtml(s)+'</td><td>'+sc+'</td><td>'+mx+'</td></tr>';
+    detailParts.push(s+' '+sc+'/'+mx);
   });
   document.getElementById('resTable').innerHTML = tbl;
 
   window._examResult = {
-    nama: studentName, kelas: studentClass, skor: totalCorrect, skorMaks: totalMaks, pct: pct,
+    nama: studentName, kelas: studentClass, skor: totalScore, skorMaks: 100, pct: totalScore,
     grade: grade+' ('+gradeLabel+')', detail: detailParts.join(' | ') + ' | Pelanggaran: '+violCount+'x',
-    perSubject: perSubject, violasi: violCount
+    perSubject: perSubject, violasi: violCount,
+    skorPerSoal: perQuestion.map(p=>Math.round(p.qScore*100)/100)
   };
 
   document.getElementById('screen-result').style.display='block';
@@ -747,7 +773,7 @@ function buildAnswerDetail(){
     if(q.type==='pg'){ jawaban = v || '(kosong)'; }
     else if(q.type==='multi'){ jawaban = (v&&v.length) ? v.join(' ; ') : '(kosong)'; }
     else if(q.type==='matrix'){ jawaban = v ? q.rows.map(r=>r.label+':'+(v[r.label]||'-')).join(' ; ') : '(kosong)'; }
-    return { no: idx+1, subject: q.subject, jawaban: jawaban, benar: isCorrect(q) ? 1 : 0 };
+    return { no: idx+1, subject: q.subject, jawaban: jawaban, benar: Math.round(scoreFrac(q)*100)/100 };
   });
 }
 function autoSubmitToSheet(){
@@ -783,7 +809,7 @@ document.getElementById('btnRetrySubmit').addEventListener('click', autoSubmitTo
 document.getElementById('btnExcel').addEventListener('click',()=>{
   const r = window._examResult;
   const rows = [];
-  rows.push(['Nama','Kelas','No','Materi','Soal','Jawaban Siswa','Kunci Jawaban','Skor']);
+  rows.push(['Nama','Kelas','No','Materi','Soal','Jawaban Siswa','Kunci Jawaban','Skor Soal (0-1, parsial)']);
   function answerLabel(q){
     if(q.type==='pg') return q.correct;
     if(q.type==='multi') return q.correct.join(' ; ');
@@ -797,15 +823,15 @@ document.getElementById('btnExcel').addEventListener('click',()=>{
     else if(q.type==='multi'){ jawabanSiswa = (v&&v.length)? v.join(' ; ') : '(kosong)'; }
     else if(q.type==='matrix'){ jawabanSiswa = v ? q.rows.map(row=>row.label+':'+(v[row.label]||'-')).join(' ; ') : '(kosong)'; }
     const shortText = q.text.replace(/\s+/g,' ').slice(0,80)+'...';
-    rows.push([r.nama, r.kelas, idx+1, q.subject, shortText, jawabanSiswa, answerLabel(q), isCorrect(q)?1:0]);
+    rows.push([r.nama, r.kelas, idx+1, q.subject, shortText, jawabanSiswa, answerLabel(q), Math.round(scoreFrac(q)*100)/100]);
   });
   rows.push([]);
   rows.push(['RINGKASAN']);
-  rows.push(['Nama','Kelas','Skor','Skor Maksimal','Persentase','Grade','Pelanggaran']);
-  rows.push([r.nama, r.kelas, r.skor, r.skorMaks, r.pct+'%', r.grade, r.violasi]);
+  rows.push(['Nama','Kelas','Skor Akhir (0-100)','Grade','Pelanggaran']);
+  rows.push([r.nama, r.kelas, r.skor, r.grade, r.violasi]);
 
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{wch:18},{wch:8},{wch:5},{wch:22},{wch:60},{wch:30},{wch:30},{wch:6}];
+  ws['!cols'] = [{wch:18},{wch:8},{wch:5},{wch:22},{wch:60},{wch:30},{wch:30},{wch:10}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Hasil ASTS PAI Kelas 7');
   const fname = 'Hasil_ASTS_PAI7_'+r.nama.replace(/[^a-zA-Z0-9]/g,'_')+'.xlsx';

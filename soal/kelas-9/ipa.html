@@ -1,48 +1,847 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ilmu Pengetahuan Alam — Kelas IX — ASTS SMP Negeri 1 Dlingo</title>
-<meta name="robots" content="noindex">
-<link rel="icon" href="../../assets/img/logo-smpn1dlingo.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Asesmen Sumatif Tengah Semester — IPA — SMP N 1 Dlingo</title>
+<link rel="icon" type="image/png" href="../../assets/img/logo-smpn1dlingo.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --navy:#4a3c0f; --blue:#b8860b; --blue-light:#fdf6e3; --green:#1a9c5f;
+    --red:#d3452b; --amber:#e0a318; --gray:#6b6152; --bg:#fffdf6; --border:#ede0b8; --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:#1b2430;-webkit-tap-highlight-color:transparent;}
+  /* anti-screenshot / anti-copy deterrents (best-effort; see note in app) */
+  #screen-exam, #screen-exam *{
+    -webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
+    -webkit-touch-callout:none;
+  }
+  #screen-exam img{-webkit-user-drag:none;user-drag:none;pointer-events:none;}
+  #screen-exam.blurred{filter:blur(18px);transition:filter .15s;}
+  @media print{
+    #screen-exam, #screen-start, #screen-result{display:none !important;}
+    body::before{content:"Konten ujian tidak dapat dicetak.";display:block;text-align:center;padding:40px;font-size:18px;}
+  }
+  img{max-width:100%;height:auto;border-radius:6px;border:1px solid var(--border);}
+  button{font-family:inherit;cursor:pointer;}
+  .hidden{display:none !important;}
+
+  /* ===== START / INSTRUCTIONS ===== */
+  #screen-start{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:linear-gradient(135deg,var(--navy),var(--blue));}
+  .start-card{background:#fff;border-radius:16px;max-width:640px;width:100%;padding:34px 32px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+  .school-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+  .school-header img{width:56px;height:auto;border:none;border-radius:0;flex-shrink:0;}
+  .school-header .stxt{line-height:1.35;}
+  .school-header .stxt b{display:block;color:var(--navy);font-size:15px;}
+  .school-header .stxt span{color:var(--gray);font-size:12px;}
+  .start-card h1{margin:0 0 4px;font-size:21px;color:var(--navy);}
+  .start-card .sub{color:var(--gray);margin:0 0 20px;font-size:14px;}
+  .tabs{display:flex;gap:8px;margin-bottom:18px;border-bottom:1.5px solid var(--border);}
+  .tab-btn{padding:9px 16px;border:none;background:none;font-weight:700;font-size:13.5px;color:var(--gray);
+    border-bottom:3px solid transparent;margin-bottom:-2px;}
+  .tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;background:var(--blue-light);
+    border-radius:10px;padding:14px 16px;margin-bottom:18px;font-size:13px;}
+  .info-grid div b{display:block;color:var(--navy);font-size:13px;}
+  .info-grid div span{color:var(--gray);}
+  label{display:block;font-size:13px;font-weight:600;color:var(--navy);margin:14px 0 6px;}
+  input[type=text],input[type=password]{width:100%;padding:12px 14px;border:1.5px solid var(--border);
+    border-radius:8px;font-size:15px;}
+  input:focus{outline:none;border-color:var(--blue);}
+  select{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;
+    background:#fff;color:#1b2430;appearance:none;
+    background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235b6472' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;background-size:18px;}
+  select:focus{outline:none;border-color:var(--blue);}
+  select:disabled{background-color:#f4f6f9;color:var(--gray);cursor:not-allowed;}
+  .instr-list{font-size:13.5px;line-height:1.8;color:#33404f;padding-left:20px;margin:0 0 10px;}
+  .rules{font-size:12.5px;color:var(--gray);line-height:1.6;margin:18px 0;padding:12px 14px;
+    background:#fff8ea;border:1px solid #f1e0ad;border-radius:8px;}
+  .btn-primary{width:100%;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:9px;
+    font-size:16px;font-weight:700;margin-top:12px;transition:.15s;}
+  .btn-primary:hover{background:var(--navy);}
+  .btn-primary:disabled{background:#aab6c8;cursor:not-allowed;}
+  .err-msg{color:var(--red);font-size:12.5px;margin-top:6px;min-height:16px;}
+
+  /* ===== EXAM LAYOUT ===== */
+  #screen-exam{display:none;min-height:100vh;flex-direction:column;}
+  #topbar{background:var(--navy);color:#fff;padding:10px 18px;display:flex;align-items:center;
+    justify-content:space-between;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:50;}
+  #topbar .brand{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;}
+  #topbar .brand img{width:28px;height:auto;border:none;border-radius:0;}
+  #topbar .brand .who{font-weight:400;opacity:.85;font-size:11.5px;display:block;}
+  #timerBox{background:rgba(255,255,255,.12);padding:8px 16px;border-radius:8px;font-weight:700;
+    font-size:18px;letter-spacing:1px;min-width:110px;text-align:center;}
+  #timerBox.low{background:#c0392b;animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+  #violationBadge{background:var(--red);padding:5px 10px;border-radius:20px;font-size:12px;font-weight:700;display:none;}
+  #panelToggle{background:rgba(255,255,255,.15);color:#fff;border:none;padding:8px 12px;border-radius:8px;font-size:13px;}
+
+  #examBody{display:flex;flex:1;overflow:hidden;}
+  #navPanel{width:280px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);padding:16px;overflow-y:auto;}
+  #navPanel h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--gray);margin:14px 0 8px;}
+  #navPanel h3:first-child{margin-top:0;}
+  .navgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+  .navbtn{aspect-ratio:1;border:1.5px solid var(--border);background:#fff;border-radius:6px;font-size:12px;
+    font-weight:700;color:var(--navy);display:flex;align-items:center;justify-content:center;}
+  .navbtn.answered{background:var(--green);border-color:var(--green);color:#fff;}
+  .navbtn.current{outline:3px solid var(--amber);outline-offset:1px;}
+  .legend{display:flex;gap:14px;font-size:11px;color:var(--gray);margin:14px 0 4px;flex-wrap:wrap;}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
+  #navSubmitBtn{width:100%;margin-top:18px;padding:12px;background:var(--red);color:#fff;border:none;
+    border-radius:8px;font-weight:700;font-size:14px;}
+
+  #questionArea{flex:1;overflow-y:auto;padding:26px 32px 100px;}
+  .qwrap{max-width:820px;margin:0 auto;}
+  .qsubject{display:inline-block;background:var(--blue-light);color:var(--blue);font-size:11.5px;font-weight:700;
+    padding:4px 12px;border-radius:20px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.3px;}
+  .qnum{font-size:14px;color:var(--gray);margin-bottom:4px;}
+  .qtext{font-size:16px;line-height:1.7;white-space:pre-wrap;margin-bottom:16px;}
+  .arabic-block{background:var(--blue-light);border:1px solid #cfe0f7;border-radius:10px;
+    padding:16px 18px;margin:0 0 16px;}
+  .arabic-block .ar{direction:rtl;text-align:right;font-family:'Traditional Arabic','Scheherazade New','Amiri',
+    'Noto Naskh Arabic',serif;font-size:1.85em;line-height:2.1;color:var(--navy);}
+  .qimg-wrap{margin:14px 0;display:flex;flex-wrap:wrap;gap:14px;}
+  .qimg-wrap .imgbox{position:relative;cursor:zoom-in;}
+  .qimg-wrap img{max-width:640px;width:100%;display:block;}
+  .qimg-wrap.multi-img{gap:10px;}
+  .qimg-wrap.multi-img .imgbox{flex:1 1 150px;max-width:220px;}
+  .qimg-wrap.multi-img img{max-width:220px;}
+  .qimg-wrap .zoomhint{position:absolute;bottom:8px;right:8px;background:rgba(15,39,69,.75);color:#fff;
+    font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;pointer-events:none;}
+  .qimg-wrap .imgph{width:280px;height:160px;border:2px dashed var(--border);border-radius:8px;
+    display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:12.5px;text-align:center;
+    background:#fafbfc;padding:10px;}
+  #lightbox{position:fixed;inset:0;background:rgba(10,20,35,.94);z-index:1200;display:none;
+    align-items:center;justify-content:center;padding:14px;}
+  #lightbox.open{display:flex;}
+  #lightbox img{max-width:100%;max-height:92vh;width:auto;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.5);}
+  #lightbox .lb-close{position:absolute;top:16px;right:18px;background:#fff;color:var(--navy);border:none;
+    width:38px;height:38px;border-radius:50%;font-size:18px;font-weight:700;}
+  .qtype-hint{font-size:12.5px;color:var(--amber);font-weight:700;margin-bottom:10px;}
+
+  .option{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border:1.5px solid var(--border);
+    border-radius:10px;margin-bottom:10px;background:#fff;transition:.12s;}
+  .option:hover{border-color:var(--blue);}
+  .option.selected{border-color:var(--blue);background:var(--blue-light);}
+  .option input{margin-top:3px;flex-shrink:0;width:17px;height:17px;}
+  .option .otext{font-size:15px;line-height:1.5;}
+  .option .olabel{font-weight:700;color:var(--navy);margin-right:4px;}
+
+  table.matrix{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px;}
+  table.matrix th,table.matrix td{border:1px solid var(--border);padding:10px;text-align:center;}
+  table.matrix th{background:var(--blue-light);color:var(--navy);}
+  table.matrix td.stmt{text-align:left;font-size:14px;}
+  table.matrix input{width:17px;height:17px;}
+
+  #navRow{max-width:820px;margin:24px auto 0;display:flex;justify-content:space-between;gap:10px;}
+  .btn-nav{padding:11px 22px;border-radius:8px;border:1.5px solid var(--border);background:#fff;
+    font-weight:700;color:var(--navy);font-size:14px;}
+  .btn-nav:disabled{opacity:.4;}
+  .btn-nav.primary{background:var(--blue);color:#fff;border:none;}
+
+  #warnOverlay{position:fixed;inset:0;background:rgba(15,39,69,.95);z-index:999;display:none;
+    align-items:center;justify-content:center;padding:20px;color:#fff;text-align:center;}
+  #warnOverlay .box{max-width:420px;}
+  #warnOverlay h2{color:#ffd166;font-size:22px;}
+  #warnOverlay p{font-size:14.5px;line-height:1.6;opacity:.9;}
+  #warnOverlay button{margin-top:16px;padding:12px 28px;background:#ffd166;border:none;border-radius:8px;
+    font-weight:700;font-size:14.5px;color:#432;}
+
+  /* ===== RESULT ===== */
+  #screen-result{display:none;min-height:100vh;padding:30px 16px;background:var(--bg);}
+  .result-card{max-width:720px;margin:0 auto;background:#fff;border-radius:16px;padding:32px;box-shadow:0 10px 40px rgba(0,0,0,.08);}
+  .result-card h1{color:var(--navy);margin-top:0;font-size:22px;}
+  .score-hero{text-align:center;padding:26px;background:linear-gradient(135deg,var(--navy),var(--blue));
+    border-radius:14px;color:#fff;margin:18px 0 24px;}
+  .score-hero .num{font-size:46px;font-weight:800;}
+  .score-hero .grade{font-size:15px;opacity:.9;margin-top:4px;}
+  .breakdown{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px;}
+  .breakdown th,.breakdown td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:left;}
+  .breakdown th{color:var(--gray);font-size:12px;text-transform:uppercase;}
+  .result-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+  .result-actions button{flex:1;min-width:180px;padding:13px;border-radius:9px;font-weight:700;font-size:14px;border:none;}
+  #btnExcel{background:var(--blue);color:#fff;}
+  #btnRetrySubmit{background:var(--amber);color:#432;}
+  .submit-status{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:9px;font-size:13.5px;
+    font-weight:600;margin-bottom:18px;}
+  .submit-status.sending{background:#fff8ea;color:#8a6d00;border:1px solid #f1e0ad;}
+  .submit-status.ok{background:#e9f9f0;color:#0f7a45;border:1px solid #b7ecd0;}
+  .submit-status.fail{background:#fdecea;color:#a4271f;border:1px solid #f3c3bd;}
+  .dotpulse{width:9px;height:9px;border-radius:50%;background:currentColor;flex-shrink:0;animation:pulse 1s infinite;}
+  .submit-status.ok .dotpulse,.submit-status.fail .dotpulse{animation:none;}
+  .note-small{font-size:12px;color:var(--gray);margin-top:14px;line-height:1.6;}
+
+  @media (max-width:820px){
+    #navPanel{position:fixed;left:-300px;top:0;bottom:0;z-index:60;transition:.2s;box-shadow:4px 0 20px rgba(0,0,0,.15);}
+    #navPanel.open{left:0;}
+    #questionArea{padding:18px 16px 90px;}
+    .qimg-wrap img,.qimg-wrap .imgph{max-width:100%;width:100%;}
+  }
+</style>
 </head>
 <body>
-<div class="identitas-bar"></div>
 
-<header class="kop">
-  <div class="kop-inner">
-    <a class="kembali" href="../../kelas-9.html">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-      Kelas IX
-    </a>
-    <img class="kop-logo" src="../../assets/img/logo-smpn1dlingo.png" alt="Logo SMP Negeri 1 Dlingo">
-    <p class="kop-sekolah">SMP NEGERI 1 DLINGO</p>
-    <h1 class="kop-judul">Ilmu Pengetahuan Alam</h1>
-    <span class="kop-tahun">Kelas <strong>IX</strong> &middot; Tahun Pelajaran <strong>2026/2027</strong></span>
+<!-- ============ START / INSTRUCTIONS SCREEN ============ -->
+<div id="screen-start">
+  <div class="start-card">
+    <a href="../../kelas-9.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--gray);margin-bottom:14px;">&larr; Menu Kelas 9</a>
+    <div class="school-header">
+      <img src="../../assets/img/logo-smpn1dlingo.png" alt="Logo Sekolah">
+      <div class="stxt"><b>SMP NEGERI 1 DLINGO</b><span>Asesmen Sumatif Tengah Semester · IPA (Ilmu Pengetahuan Alam) · TP 2026/2027</span></div>
+    </div>
+    <h1>📝 Asesmen Sumatif Tengah Semester — IPA</h1>
+    <p class="sub">Jenjang SMP · Kelas 9 · Semester Ganjil</p>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="petunjuk">📋 Petunjuk</button>
+      <button class="tab-btn" data-tab="mulai">🚀 Mulai Ujian</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-petunjuk">
+      <div class="info-grid">
+        <div><b id="infoJumlah">40 Soal</b><span>Pilihan Ganda &amp; PG Kompleks</span></div>
+        <div><b>90 Menit</b><span>Alokasi waktu pengerjaan</span></div>
+        <div><b>4 Materi</b><span>Pertumbuhan &amp; Perkembangan, Sistem Saraf &amp; Indera, Sistem Reproduksi, Tekanan Zat</span></div>
+        <div><b>Acak Soal</b><span>Urutan soal &amp; opsi diacak</span></div>
+      </div>
+      <p style="font-size:13.5px;color:#33404f;margin:0 0 8px;font-weight:700;">Petunjuk Pengerjaan:</p>
+      <ol class="instr-list">
+        <li>Masukkan token ujian, pilih kelas, dan pilih nama pada tab "Mulai Ujian" sebelum memulai.</li>
+        <li>Bacalah setiap butir soal dengan cermat sebelum menjawab.</li>
+        <li>Terdapat soal Pilihan Ganda (pilih satu jawaban) dan Pilihan Ganda Kompleks (pilih jawaban lebih dari satu, atau isi tabel Benar/Salah, sesuai instruksi pada tiap soal).</li>
+        <li>Untuk soal Pilihan Ganda Kompleks dan tabel Benar/Salah, <b>penilaian bersifat parsial</b> — skor dihitung berdasarkan jumlah pernyataan/opsi yang dijawab benar, bukan sistem semua-benar-atau-nol.</li>
+        <li>Ujian akan tampil dalam mode layar penuh (fullscreen) sejak dimulai.</li>
+        <li>Jangan membuka tab atau aplikasi lain — sistem akan mencatat setiap pelanggaran.</li>
+        <li>Waktu berjalan otomatis selama 90 menit dan tidak dapat dijeda.</li>
+        <li>Gunakan panel navigasi soal untuk melompat ke nomor soal tertentu dan memantau soal yang sudah/belum dijawab.</li>
+        <li>Tekan "Kirim Jawaban" setelah selesai. Jika pengiriman gagal, gunakan tombol "Kirim Ulang" yang akan muncul otomatis.</li>
+      </ol>
+    </div>
+
+    <div class="tab-panel" id="tab-mulai">
+      <label>Token Ujian</label>
+      <input type="password" id="inputToken" placeholder="Masukkan token dari guru">
+      <label>Kelas</label>
+      <select id="inputKelas"><option value="">— Pilih Kelas —</option></select>
+      <label>Nama Lengkap</label>
+      <select id="inputNama" disabled><option value="">— Pilih kelas terlebih dahulu —</option></select>
+      <div class="rules">
+        ⚠️ <b>Perhatian sebelum memulai:</b><br>
+        • Ujian akan tampil dalam mode <b>layar penuh (fullscreen)</b>.<br>
+        • Jangan membuka tab/aplikasi lain selama ujian — sistem akan mencatat pelanggaran.<br>
+        • Waktu berjalan otomatis dan tidak dapat dijeda. Ujian akan terkirim otomatis saat waktu habis.<br>
+        • Pastikan koneksi internet stabil agar hasil dapat terkirim ke guru secara real-time.<br>
+        • Layar akan mengabur otomatis dan pelanggaran tercatat jika kamu mencoba keluar layar, menyalin teks, atau mengambil tangkapan layar (screenshot).
+      </div>
+      <div class="err-msg" id="startErr"></div>
+      <button class="btn-primary" id="btnStart">🚀 Mulai Ujian (Layar Penuh)</button>
+    </div>
   </div>
-</header>
+</div>
 
-<main>
-  <div class="panel-segera">
-    <span class="lencana">Segera hadir</span>
-    <h2>Soal belum tersedia</h2>
-    <p>Berkas soal untuk mata pelajaran <strong>Ilmu Pengetahuan Alam</strong> Kelas IX sedang disiapkan dan akan diunggah menyusul.</p>
-    <p>Berkas ini akan menggantikan halaman placeholder di alamat berikut, sehingga tautan dari menu tidak perlu diubah.</p>
-    <span class="berkas">soal/kelas-9/ipa.html</span>
-    <br>
-    <a class="tombol-kembali" href="../../kelas-9.html">&larr; Kembali ke Kelas IX</a>
+<!-- ============ EXAM SCREEN ============ -->
+<div id="screen-exam">
+  <div id="topbar">
+    <button id="panelToggle">☰ Soal</button>
+    <div class="brand"><img src="../../assets/img/logo-smpn1dlingo.png" alt="Logo"><span>ASTS IPA · TP 2026/2027<small class="who" id="brandStudent"></small></span></div>
+    <div id="violationBadge">⚠ Pelanggaran: <span id="violCount">0</span></div>
+    <div id="timerBox">90:00</div>
   </div>
-</main>
+  <div id="examBody">
+    <div id="navPanel"></div>
+    <div id="questionArea">
+      <div class="qwrap" id="qwrap"></div>
+      <div id="navRow">
+        <button class="btn-nav" id="btnPrev">← Sebelumnya</button>
+        <button class="btn-nav primary" id="btnNext">Selanjutnya →</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-<footer>
-  <p><strong>SMP Negeri 1 Dlingo</strong> — Bantul, Daerah Istimewa Yogyakarta<br>
-  Portal Asesmen Sumatif Tengah Semester &middot; Tahun Pelajaran 2026/2027</p>
-</footer>
+<div id="lightbox">
+  <button class="lb-close" id="lightboxClose">✕</button>
+  <img id="lightboxImg" src="" alt="Gambar diperbesar">
+</div>
 
+<div id="warnOverlay">
+  <div class="box">
+    <h2 id="warnTitle">⚠ Peringatan</h2>
+    <p id="warnText"></p>
+    <button id="warnBtn">Kembali ke Ujian</button>
+  </div>
+</div>
+
+<!-- ============ RESULT SCREEN ============ -->
+<div id="screen-result">
+  <div class="result-card">
+    <div class="school-header">
+      <img src="../../assets/img/logo-smpn1dlingo.png" alt="Logo Sekolah">
+      <div class="stxt"><b>SMP NEGERI 1 DLINGO</b><span>Asesmen Sumatif Tengah Semester · IPA (Ilmu Pengetahuan Alam) · TP 2026/2027</span></div>
+    </div>
+    <h1>✅ Hasil Ujian</h1>
+    <div class="score-hero">
+      <div style="font-size:12.5px;opacity:.85;letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px;">Nilai Akhir</div>
+      <div class="num" id="resScore">0</div>
+      <div class="grade" id="resGrade">Predikat —</div>
+    </div>
+    <div id="submitStatus" class="submit-status sending">
+      <span class="dotpulse"></span><span id="submitStatusText">Mengirim jawaban ke guru...</span>
+    </div>
+    <table class="breakdown" id="resTable"></table>
+    <div class="result-actions">
+      <button id="btnRetrySubmit" class="hidden">🔁 Kirim Ulang</button>
+      <button id="btnExcel">⬇️ Unduh Hasil (Excel)</button>
+    </div>
+    <p class="note-small">
+      Nama: <b id="rNama"></b> · Kelas: <b id="rKelas"></b> · Pelanggaran layar tercatat: <b id="rViol"></b> kali.<br>
+      Jawaban dikirim otomatis secara real-time ke Google Spreadsheet guru begitu halaman ini muncul. Jika status di atas menunjukkan gagal terkirim, gunakan tombol "Kirim Ulang", atau pastikan koneksi internet aktif lalu klik tombol tersebut. Tombol "Unduh Hasil (Excel)" tetap tersedia sebagai cadangan.
+    </p>
+  </div>
+</div>
+
+<script id="questions-data" type="application/json">[{"subject": "Pertumbuhan dan Perkembangan", "type": "pg", "text": "Perhatikan pernyataan berikut!\n1) Bersifat kuantitatif dan dapat dihitung dengan angka.\n2) Proses menuju kedewasaan.\n3) Bersifat kualitatif atau tidak dapat dinyatakan dengan angka.\n4) Bersifat irreversible (tidak dapat kembali ke asal).\n\nCiri-ciri dari proses pertumbuhan ditunjukkan oleh nomor...", "options": ["1 dan 2", "1 dan 4", "2 dan 3", "3 dan 4"], "correct": "1 dan 4", "rows": null, "img": null, "note": null}, {"subject": "Pertumbuhan dan Perkembangan", "type": "matrix", "text": "Perhatikan tabel berikut! Tentukan mana yang termasuk proses perkembangan!", "options": null, "correct": null, "rows": [{"label": "A", "text": "Tubuh bertambah tinggi dan gemuk.", "cols": ["Benar", "Salah"], "correct": "Salah"}, {"label": "B", "text": "Kemampuan berkomunikasi yang semakin mahir.", "cols": ["Benar", "Salah"], "correct": "Benar"}, {"label": "C", "text": "Bayi yang awalnya hanya bisa tengkurap, lalu bisa merangkak dan berjalan.", "cols": ["Benar", "Salah"], "correct": "Benar"}], "img": null, "note": null}, {"subject": "Pertumbuhan dan Perkembangan", "type": "pg", "text": "Perhatikan skema pertumbuhan berikut!\n\nDari skema tersebut, diketahui bahwa setelah fertilisasi, zigot akan membelah terus menerus bertambah jumlahnya tetapi massanya tidak bertambah. Pembelahan tersebut dikenal dengan...", "options": ["Fase gastrula", "Fase blastula", "Fase morula", "Fase amuboid"], "correct": "Fase morula", "rows": null, "img": "IPA9_3.png", "note": null}, {"subject": "Pertumbuhan dan Perkembangan", "type": "multi", "text": "Perhatikan gambar berikut!\n\nPilihlah jawaban yang tepat lebih dari satu!\nCiri-ciri pertumbuhan dan perkembangan yang dialami oleh seseorang pada fase seperti yang ditunjukkan oleh gambar adalah...", "options": ["Emosi sering berubah-ubah dengan cepat", "Telah matang secara emosional", "Sel-sel tubuh mengalami degenerasi", "Mengalami masa pubertas"], "correct": ["Emosi sering berubah-ubah dengan cepat", "Mengalami masa pubertas"], "rows": null, "img": "IPA9_4.png", "note": null}, {"subject": "Pertumbuhan dan Perkembangan", "type": "pg", "text": "Faktor internal, adalah faktor dari dalam tubuh tumbuhan meliputi genetika dan hormon. Tumbuhan yang memiliki gen yang baik akan tumbuh dan berkembang cepat, serta berbuah lebih banyak. Sementara hormon, merupakan zat yang berfungsi mengendalikan metabolisme tubuh.\n\nPerhatikan pernyataan di bawah ini:\n1) Menutup luka dan jaringan yang rusak\n2) Berperan dalam proses pengguguran daun, penutupan stomata untuk mengurangi penguapan, dan masa dormansi.\n3) Berperan dalam proses pemasakan buah dan penuaan\n4) Mempengaruhi pemanjangan, pembelahan, dan diferensiasi sel.\n\nBerdasarkan pernyataan di atas, yang termasuk pengaruh hormon auksin terhadap pertumbuhan tanaman adalah...", "options": ["1", "2", "3", "4"], "correct": "4", "rows": null, "img": null, "note": null}, {"subject": "Pertumbuhan dan Perkembangan", "type": "pg", "text": "Pada hewan yang berkembang biak dengan cara bertelur dan melahirkan (ovovivipar), embrio berkembang di dalam telur yang berada di dalam tubuh induk, sampai akhirnya telur siap ditetaskan. Perhatikan gambar hewan berikut (1)-(5)!\n\nHewan yang berkembang biak dengan cara ovovivipar ditunjukkan oleh gambar...", "options": ["(1), (2), (3)", "(1), (3), (4)", "(2), (3), (4)", "(3), (4), (5)"], "correct": "(1), (3), (4)", "rows": null, "img": ["IPA9_6A.png", "IPA9_6B.png", "IPA9_6C.png", "IPA9_6D.png", "IPA9_6E.png"], "note": null}, {"subject": "Pertumbuhan dan Perkembangan", "type": "matrix", "text": "Upacara adat Tedak Siten (turun tanah) secara tradisi dilakukan saat bayi berusia sekitar 7-8 bulan (atau hitungan 7 selapan dalam kalender Jawa). Pada usia tersebut, bayi secara biologis mulai memasuki fase perkembangan motorik baru untuk bersentuhan langsung dengan lingkungan tanah.\n\nPerhatikan pernyataan berikut. Tentukan Benar/Salah ciri pertumbuhan dan perkembangan manusia pada usia tersebut!", "options": null, "correct": null, "rows": [{"label": "A", "text": "Terjadi proses pematangan sistem saraf motorik kasar, sehingga otot rangka mulai mampu berkoordinasi untuk belajar duduk, merangkak, hingga menopang tubuh saat berdiri.", "cols": ["Benar", "Salah"], "correct": "Benar"}, {"label": "B", "text": "Mengalami proses osifikasi (penulangan) sekunder dan deposisi kalsium pada tulang rawan kaki agar strukturnya menjadi lebih keras untuk menumpu beban tubuh.", "cols": ["Benar", "Salah"], "correct": "Benar"}, {"label": "C", "text": "Laju pertumbuhan fisik (tinggi dan berat badan) mengalami perlambatan.", "cols": ["Benar", "Salah"], "correct": "Salah"}], "img": null, "note": null}, {"subject": "Sistem Saraf dan Indera", "type": "pg", "text": "Perhatikan gambar sel saraf berikut!\n\nNeuron (sel saraf) memiliki beberapa bagian yang berperan dalam menerima, memproses dan menghantarkan impuls saraf. Setiap bagian memiliki fungsi yang berbeda agar proses penghantaran impuls dapat berlangsung dengan baik. Dari gambar, bagian yang ditunjuk huruf X secara berturut-turut nama dan fungsinya adalah...", "options": ["Dendrit, menerima impuls (sinyal) dari sel lain", "Akson, sebagai tempat masuknya ion", "Badan sel, membentuk selubung mielin", "Sinapsis, menghubungkan antara sel saraf"], "correct": "Dendrit, menerima impuls (sinyal) dari sel lain", "rows": null, "img": "IPA9_8.png", "note": null}, {"subject": "Sistem Saraf dan Indera", "type": "pg", "text": "Berdasarkan fungsinya, neuron dibedakan menjadi tiga jenis, yaitu neuron sensoris, neuron motoris, dan neuron konektor.\n\nPerhatikan pernyataan berikut ini!\n1) Neuron sensoris berfungsi menghantarkan impuls dari pusat saraf ke otot atau kelenjar.\n2) Neuron sensoris berfungsi menghantarkan impuls dari organ sensor ke pusat saraf.\n3) Neuron motoris berfungsi menghantarkan impuls dari pusat saraf ke otot atau kelenjar.\n4) Neuron motoris berfungsi menghubungkan satu neuron dengan neuron lainnya.\n5) Neuron konektor berfungsi menghantarkan impuls dari organ sensor ke pusat saraf.\n6) Neuron konektor berfungsi menghubungkan satu neuron dengan neuron lainnya.\n\nPernyataan yang benar adalah...", "options": ["1), 2), 3)", "2), 3), 4)", "2), 3), 5)", "2), 3), 6)"], "correct": "2), 3), 6)", "rows": null, "img": "IPA9_9.png", "note": null}, {"subject": "Sistem Saraf dan Indera", "type": "pg", "text": "Andi baru saja masuk ke kamarnya pada siang hari setelah dari halaman rumah yang panas dan terang. Awalnya Andi tidak bisa melihat dengan jelas, akhirnya beberapa saat kemudian, ia baru bisa melihat dengan jelas. Hal ini disebabkan karena iris akan berkontraksi secara refleks membuat pupil melebar (membesar) agar cahaya yang masuk ke mata lebih banyak sehingga benda terlihat lebih jelas. Berdasarkan pernyataan tersebut, bagian pupil dan iris mata ditunjukkan pada gambar nomor...", "options": ["1 dan 2", "2 dan 3", "3 dan 4", "4 dan 5"], "correct": "2 dan 3", "rows": null, "img": "IPA9_10.png", "note": null}, {"subject": "Sistem Saraf dan Indera", "type": "pg", "text": "Indera pengecap adalah salah satu dari lima panca indera manusia yang berfungsi untuk mendeteksi dan mengenali berbagai rasa dari makanan atau minuman yang masuk ke dalam mulut. Organ utama dari indera pengecap ini adalah lidah.\n\nDari gambar, fungsi bagian lidah berturut-turut dari depan ke belakang (4,2,3,1) untuk merasakan...", "options": ["Pahit, manis, asam, asin", "Manis, asin, pahit, asam", "Manis, asam, asin, pahit", "Asam, manis, asin, pahit"], "correct": "Manis, asam, asin, pahit", "rows": null, "img": "IPA9_11.png", "note": null}, {"subject": "Sistem Saraf dan Indera", "type": "pg", "text": "Bacalah teks berikut!\n\nMengenal Berbagai Macam Sel Saraf pada Indra Peraba\n\nManusia memiliki kulit sebagai indra peraba. Tahukah kamu bahwa setidaknya ada lima jenis sel saraf yang ada di bawah kulit. Lima sel saraf tersebut akan menerima informasi yang berbeda-beda. Sel-sel saraf tersebut meliputi: ruffini, krause, paccini, meissener, dan ujung saraf bebas.\n\nPerhatikan tabel pasangan fungsi dan nama reseptor berikut.\nFungsi:\n1. Sel saraf yang peka terhadap rasa sakit/nyeri, tekanan ringan\n2. Sel saraf yang peka terhadap tekanan kuat\n3. Sel saraf yang peka terhadap rangsang suhu dingin\n4. Sel saraf yang peka terhadap suhu panas\n\nSel Saraf:\na. Pacini   b. Ruffini   c. Krause   d. Ujung saraf bebas\n\nAntara fungsi dengan nama reseptor yang sesuai adalah...", "options": ["1a, 2c, 3d, 4a", "1c, 2b, 3d, 4a", "1d, 2a, 3c, 4b", "1d, 2b, 3a, 4c"], "correct": "1d, 2a, 3c, 4b", "rows": null, "img": "IPA9_12.png", "note": null}, {"subject": "Sistem Saraf dan Indera", "type": "pg", "text": "Bacalah teks berikut!\n\nSOUND HOREG BIKIN \"BUDHEG\"\n\nSound Horeg merupakan istilah penamaan pada aktivitas parade sound system yang digelar di tengah perkampungan warga terutama di Jawa Timur dengan suara yang terlampau keras, sehingga menyebabkan benda-benda di sekitarnya bergerak (horeg).\n\nSound horeg atau sistem tata suara yang sangat keras dapat membahayakan kesehatan, terutama gangguan hilangnya pendengaran secara permanen. Paparan suara keras secara terus-menerus dapat merusak sel-sel rambut halus di koklea (rumah siput) telinga bagian dalam yang berfungsi mengubah getaran suara menjadi sinyal listrik ke otak.\n\n(Sumber: detik.com)\n\nTertarik dengan penjelasan tersebut, Hendra mengidentifikasi bagian telinga yang terdampak pada gambar berikut.\n\nHasil identifikasi Hendra yang tepat tentang bagian telinga yang rusak berdasarkan kutipan terdapat pada nomor...", "options": ["1", "2", "3", "4"], "correct": "3", "rows": null, "img": "IPA9_13.png", "teacher_note": "3 = koklea/rumah siput"}, {"subject": "Sistem Reproduksi dan Kesehatan", "type": "pg", "text": "Perhatikan teks berikut!\n\nSistem Reproduksi\n\nSistem reproduksi wanita terdiri dari serangkaian organ penting seperti ovarium atau indung telur, tuba falopi, uterus, serviks, vagina, dan vulva. Ovarium adalah sepasang kelenjar kecil yang berbentuk mirip biji kacang. Organ ini berfungsi sebagai tempat produksi sel telur (ovum) dan hormon seks wanita seperti estrogen dan progesteron. Setiap ovarium terhubung dengan saluran tuba falopi-nya masing-masing, yang menghubungkan antara ovarium dan rahim. Tuba falopi adalah tempat pertemuan antara sel telur yang telah dilepaskan dari ovarium dengan sperma, dan juga merupakan tempat terjadinya fertilisasi. Uterus atau rahim adalah organ yang berbentuk seperti buah pir, tempat tumbuh dan berkembangnya janin selama kehamilan.\n\n(Sumber: akupintar.id)\n\nLinda membuat beberapa pernyataan terkait dengan gambar dan organ reproduksi pada wanita:\n1. P adalah tuba falopi\n2. P tempat pertumbuhan janin\n3. R adalah uterus atau rahim\n4. R menghasilkan hormon estrogen\n\nPernyataan yang tepat adalah...", "options": ["1) dan 2)", "2) dan 3)", "1) dan 4)", "3) dan 4)"], "correct": "1) dan 4)", "rows": null, "img": "IPA9_14.png", "note": null}, {"subject": "Sistem Reproduksi dan Kesehatan", "type": "pg", "text": "Terdapat ciri penyakit sebagai berikut:\n1. Gejala awal berupa borok pada tempat masuknya bakteri.\n2. Biasanya menyerang daerah sekitar kelamin.\n3. Disebabkan oleh bakteri Treponema pallidum.\n\nBerdasarkan gambar dan ciri-ciri penyakit di atas, penyakit yang dimaksud adalah...", "options": ["Gonore", "Herpes Simplex Genitalis", "Sifilis", "HIV/AIDS"], "correct": "Sifilis", "rows": null, "img": "IPA9_15.png", "note": null}, {"subject": "Sistem Reproduksi dan Kesehatan", "type": "multi", "text": "Penyakit AIDS adalah penyakit yang disebabkan oleh HIV (Human Immunodeficiency Virus) yang menyerang sistem kekebalan tubuh penderita. Virus HIV akan merusak sel darah putih atau sel CD4 yang berfungsi melawan infeksi.\n\nPilihlah jawaban yang tepat lebih dari satu!\nBerikut ini yang termasuk cara penularan HIV adalah...", "options": ["Melakukan hubungan seksual dengan berganti-ganti pasangan", "Berjabat tangan dan berbagi makanan dengan orang yang terkena HIV", "Melakukan transfusi darah yang terinfeksi HIV", "Berbagi jarum suntik yang tidak steril"], "correct": ["Melakukan hubungan seksual dengan berganti-ganti pasangan", "Melakukan transfusi darah yang terinfeksi HIV", "Berbagi jarum suntik yang tidak steril"], "rows": null, "img": null, "note": null}, {"subject": "Sistem Reproduksi dan Kesehatan", "type": "pg", "text": "Perhatikan artikel berikut!\n\nMengenal Siklus Menstruasi\n\nSeorang wanita yang sudah memasuki masa pubertas, umumnya mengalami menstruasi. Menstruasi adalah peluruhan dinding rahim (endometrium) yang disertai dengan terjadinya perdarahan. Siklus menstruasi yang normal berkisar antara 28-29 hari, namun masa menstruasi bervariasi bagi setiap wanita. Siklus menstruasi melalui empat tahap yaitu fase pendarahan/menstruasi, folikuler (pra ovulasi), ovulasi, dan luteal (pasca ovulasi). Siklus menstruasi pada wanita, dapat digambarkan seperti pada grafik berikut.\n\nPernyataan yang benar berdasarkan grafik tersebut adalah...", "options": ["Bagian P terjadi peningkatan estrogen sehingga endometrium menebal", "Bagian Q terjadi penurunan estrogen sehingga dinding endometrium menebal", "Bagian R terjadi peristiwa ovulasi atau keluarnya sel telur karena lonjakan hormon LH", "Bagian S terjadi peningkatan hormon progesteron sehingga endometrium meluruh"], "correct": "Bagian R terjadi peristiwa ovulasi atau keluarnya sel telur karena lonjakan hormon LH", "rows": null, "img": "IPA9_17.png", "note": null}, {"subject": "Sistem Reproduksi dan Kesehatan", "type": "matrix", "text": "Perhatikan gambar organ reproduksi berikut! Tentukan Benar atau Salah masing-masing pernyataan berikut!", "options": null, "correct": null, "rows": [{"label": "A", "text": "No. 10 adalah testis, tempat pembentukan sperma.", "cols": ["Benar", "Salah"], "correct": "Benar"}, {"label": "B", "text": "No. 9 adalah epididimis, tempat memproduksi hormon testosteron.", "cols": ["Benar", "Salah"], "correct": "Salah"}, {"label": "C", "text": "No. 8 adalah uretra, saluran sperma dari testis menuju kandung kemih.", "cols": ["Benar", "Salah"], "correct": "Salah"}, {"label": "D", "text": "No. 3 adalah kelenjar prostat, menghasilkan cairan semen untuk memberi nutrisi sperma.", "cols": ["Benar", "Salah"], "correct": "Benar"}], "img": "IPA9_18.png", "note": null}, {"subject": "Sistem Reproduksi dan Kesehatan", "type": "matrix", "text": "Perhatikan infografis berikut mengenai dampak konsumsi alkohol! Tentukan pernyataan berikut Benar atau Salah!", "options": null, "correct": null, "rows": [{"label": "A", "text": "Depresi merupakan dampak psikis dari konsumsi alkohol.", "cols": ["Benar", "Salah"], "correct": "Benar"}, {"label": "B", "text": "Risiko kecelakaan meningkat menjadi dampak sosial dari konsumsi alkohol secara jangka panjang.", "cols": ["Benar", "Salah"], "correct": "Salah"}, {"label": "C", "text": "Dampak fisiologis dari konsumsi alkohol meliputi kerusakan hati, otak, jantung.", "cols": ["Benar", "Salah"], "correct": "Benar"}], "img": "IPA9_19.png", "note": null}, {"subject": "Sistem Reproduksi dan Kesehatan", "type": "multi", "text": "Perhatikan teks informasi berikut!\n\nKeringat dan Urin\n\nPak Ari berolahraga dan mengeluarkan banyak keringat tetapi pada kondisi tersebut jarang buang air kecil. Tetapi, pada saat Pak Ari berada pada ruang yang dingin, tidak berkeringat namun sering buang air kecil. Ketika cuaca sangat panas, ekskresi sisa metabolisme tubuh berupa air, garam, mineral, dan limbah metabolik lebih banyak melalui kulit daripada melalui ginjal, sehingga pada kondisi tersebut urin yang diproduksi sedikit.\n\nPilihlah jawaban yang tepat lebih dari satu!\nPernyataan tentang peran kulit dan ginjal sebagai organ ekskresi pada peristiwa tersebut adalah...", "options": ["Ketika suhu tubuh meningkat, pembuluh darah melebar dan kelenjar keringat pada kulit menyerap air serta sisa metabolisme sehingga produksi keringat meningkat", "Ketika suhu tubuh meningkat, pembuluh darah menyempit dan kelenjar keringat pada kulit menyerap air serta sisa metabolisme sehingga produksi keringat meningkat", "Ketika suhu tubuh menurun, pori-pori membuka dan pembuluh darah melebar sehingga darah banyak disaring lewat ginjal menyebabkan produksi urin meningkat", "Ketika suhu tubuh menurun, pembuluh darah di bawah permukaan kulit menyempit sehingga kelebihan air dibuang melalui urin"], "correct": ["Ketika suhu tubuh meningkat, pembuluh darah melebar dan kelenjar keringat pada kulit menyerap air serta sisa metabolisme sehingga produksi keringat meningkat", "Ketika suhu tubuh menurun, pembuluh darah di bawah permukaan kulit menyempit sehingga kelebihan air dibuang melalui urin"], "rows": null, "img": null, "note": null}, {"subject": "Tekanan Zat", "type": "pg", "text": "Perhatikan gambar di bawah ini. Sebuah kotak bermassa 48 kg berada di lantai seperti pada gambar. Jika percepatan gravitasi bumi 10 m/s², maka besarnya tekanan yang dialami lantai adalah...", "options": ["200 N/m²", "800 N/m²", "2.000 N/m²", "8.000 N/m²"], "correct": "8.000 N/m²", "rows": null, "img": "IPA9_21.png", "note": null}, {"subject": "Tekanan Zat", "type": "pg", "text": "Perhatikan gambar di bawah ini! Jika massa ke-empat balok tersebut sama, maka urutan balok yang memberikan tekanan terbesar hingga terkecil pada lantai adalah...", "options": ["1, 2, 3, 4", "2, 1, 3, 4", "3, 1, 2, 4", "4, 3, 2, 1"], "correct": "2, 1, 3, 4", "rows": null, "img": "IPA9_22.png", "note": null}, {"subject": "Tekanan Zat", "type": "matrix", "text": "Perhatikan teks informasi berikut!\n\nTekanan dalam Kehidupan Sehari-hari\n\nDalam kehidupan sehari-hari, kita tidak dapat lepas dari peristiwa yang berkaitan dengan tekanan. Jika berjalan di tanah lumpur, telapak kaki akan membekas lebih dalam. Besarnya tekanan pada suatu benda tergantung pada gaya tekan yang bekerja pada benda dan luas penampang bidang tekan.\n\nTekanan juga terjadi pada zat cair. Karena pengaruh tekanan, para arsitek membangun bendungan dengan memperhitungkan tekanan hidrostatis sehingga bagian dasar bendungan dibuat lebih tebal. Tekanan zat cair bergantung pada kedalaman dan massa jenis zat cair. Tekanan udara ditunjukkan dengan hukum Boyle, yaitu hasil kali tekanan dan volume gas dalam ruang tertutup, besarnya sama.\n\nNyatakan Benar atau Salah pernyataan berikut mengenai tekanan!", "options": null, "correct": null, "rows": [{"label": "A", "text": "Tekanan menjadi besar apabila luas bidang tekan semakin kecil.", "cols": ["Benar", "Salah"], "correct": "Benar"}, {"label": "B", "text": "Pada kedalaman yang sama, menyelam di air laut tekanannya akan lebih besar daripada di air tawar.", "cols": ["Benar", "Salah"], "correct": "Benar"}, {"label": "C", "text": "Tekanan udara dalam ruang tertutup menjadi kecil apabila volume diperbesar.", "cols": ["Benar", "Salah"], "correct": "Benar"}], "img": null, "note": null}, {"subject": "Tekanan Zat", "type": "multi", "text": "Perhatikan teks informasi berikut!\n\nTroli dan Balok Kayu\n\nTekanan zat padat adalah besarnya gaya (F) yang bekerja di setiap luas bidang tekan (A) pada zat padat. Luas bidang tekan hanya mengacu pada daerah yang mengalami penekanan saja, bukan luas secara keseluruhan.\n\nPak Yanto meletakkan balok kayu ke atas troli seperti pada gambar 1, kemudian mengubah posisi balok kayu seperti gambar 2.\n\nPilihlah jawaban yang tepat lebih dari satu!\nBerdasarkan perubahan posisi balok kayu tersebut, pernyataan yang benar adalah...", "options": ["Tekanan balok kayu terhadap troli pada gambar 1 lebih besar daripada gambar 2", "Tekanan troli terhadap lantai pada gambar 1 lebih besar daripada gambar 2", "Tekanan balok kayu terhadap troli pada gambar 1 sama dengan gambar 2", "Tekanan troli terhadap lantai pada gambar 1 sama dengan gambar 2"], "correct": ["Tekanan balok kayu terhadap troli pada gambar 1 lebih besar daripada gambar 2", "Tekanan troli terhadap lantai pada gambar 1 sama dengan gambar 2"], "rows": null, "img": "IPA9_24.png", "note": null}, {"subject": "Tekanan Zat", "type": "multi", "text": "Perhatikan teks informasi berikut!\n\nSepatu Boots Petani\n\nSepatu boots adalah sejenis alas kaki. Mayoritas sepatu boots menutupi bagian telapak kaki sampai ke bagian mata kaki. Tujuan fungsional sepatu boots adalah untuk melindungi kaki dari air, kotoran, udara dingin atau dari benda-benda yang dapat melukai kaki. Sepatu boots memiliki luas alas yang lebih besar sehingga gaya tekan akibat berat badan menjadi lebih kecil. Hal ini yang memudahkan seseorang dapat berjalan di atas lumpur dengan mudah.\n\n(Sumber: wikipedia.org)\n\nSeorang petani menggunakan sepatu boots di sawah untuk menanam berbagai sayuran.\n\nPilihlah jawaban yang tepat lebih dari satu!\nAlasan yang benar sepatu boots cocok digunakan untuk bertani di sawah adalah...", "options": ["Gaya berat badan lebih kecil karena luas alas sepatu boots lebih kecil pula", "Luas alas sepatu boots lebih besar sehingga tekanan yang dihasilkan lebih kecil", "Luas alas sepatu boots lebih besar sehingga tekanan yang dihasilkan lebih besar", "Tekanan yang dihasilkan menjadi kecil karena gaya yang diberikan menjadi kecil"], "correct": ["Luas alas sepatu boots lebih besar sehingga tekanan yang dihasilkan lebih kecil", "Tekanan yang dihasilkan menjadi kecil karena gaya yang diberikan menjadi kecil"], "rows": null, "img": "IPA9_25.png", "note": null}, {"subject": "Tekanan Zat", "type": "pg", "text": "Perhatikan gambar posisi ikan dalam bejana berikut! Jika percepatan gravitasi bumi 10 m/s², maka tekanan hidrostatis yang dialami ikan tersebut adalah...", "options": ["400 N/m²", "800 N/m²", "1.000 N/m²", "14.000 N/m²"], "correct": "1.000 N/m²", "rows": null, "img": "IPA9_26.png", "note": null}, {"subject": "Tekanan Zat", "type": "pg", "text": "Perhatikan gambar berikut! Apabila luas masing-masing pipa A1 5 cm² dan pipa A2 250 cm², agar mobil yang beratnya 5000 N dapat terangkat, maka gaya yang diperlukan adalah...", "options": ["100 N", "300 N", "200 N", "400 N"], "correct": "100 N", "rows": null, "img": "IPA9_27.png", "note": null}, {"subject": "Tekanan Zat", "type": "pg", "text": "Andi melakukan percobaan tekanan hidrostatik dengan menggunakan botol yang diberi lubang A, B dan C, setelah itu botol diberi air dan terlihatlah air yang memancar pada masing-masing lubang seperti terlihat pada gambar.\n\nKesimpulan yang diperoleh dari percobaan tersebut adalah...", "options": ["Pc = Pb = Pa", "Pc < Pb < Pa", "Pc > Pb > Pa", "Pc < Pb = Pa"], "correct": "Pc > Pb > Pa", "rows": null, "img": "IPA9_28.png", "teacher_note": "Tekanan di titik C paling besar"}, {"subject": "Tekanan Zat", "type": "pg", "text": "Perhatikan dan bacalah artikel berikut!\n\nDesain Tangki Penyimpanan Air\n\nSeorang arsitek merancang tangki penyimpanan air. Ia memiliki dua opsi desain yaitu desain A (tangki tinggi dan sempit) dan desain B (tangki pendek dan lebar).\n\nAhli fisika menyatakan bahwa pemilihan harus didasarkan pada pertimbangan tekanan hidrostatis zat cair (P) yang dipengaruhi oleh kerapatan zat cair (ρ), percepatan gravitasi (g) dan kedalaman zat cair (h) yang diisikan ke dalam penampungan air.\n\nKedua tangki dirancang untuk menampung volume air yang sama. Jika dinding dan dasar tangki akan dibuat dari material yang sama, sesuai pertimbangan yang disampaikan oleh ahli fisika tersebut maka perbandingan manakah yang paling menentukan pemilihan desain dari segi kekuatan material?", "options": ["Desain A lebih berisiko karena tekanan maksimumnya lebih besar (kedalaman lebih besar)", "Desain B lebih baik karena tekanan maksimumnya lebih besar (luas dasar lebih besar)", "Kedua desain memiliki risiko yang sama karena volume (berat total air) sama", "Desain B lebih berisiko karena luas dasarnya lebih besar"], "correct": "Desain A lebih berisiko karena tekanan maksimumnya lebih besar (kedalaman lebih besar)", "rows": null, "img": "IPA9_29.png", "note": null}, {"subject": "Tekanan Zat", "type": "matrix", "text": "Cermati teks informasi berikut!\n\nPuncak Gunung Lawu dan Gunung Slamet\n\nGunung Lawu adalah salah satu gunung api aktif yang ada di Pulau Jawa yang berada di perbatasan Provinsi Jawa Tengah dan Jawa Timur. Gunung Lawu memiliki ketinggian sekitar 3.265 meter di atas permukaan laut (mdpl). Sedangkan Gunung Slamet, memiliki tinggi 3.428 meter di atas permukaan laut dan menjadi gunung tertinggi di Jawa Tengah serta tertinggi kedua di Pulau Jawa.\n\n(Sumber: surabaya.kompas.com)\n\nNyatakan Benar atau Salah mengenai tekanan udara Gunung Lawu dan Gunung Slamet sesuai informasi di atas!", "options": null, "correct": null, "rows": [{"label": "A", "text": "Tekanan udara di puncak Gunung Lawu adalah 43,35 cmHg.", "cols": ["Benar", "Salah"], "correct": "Benar"}, {"label": "B", "text": "Tekanan udara di puncak Lawu lebih rendah dibandingkan tekanan udara di puncak Gunung Slamet.", "cols": ["Benar", "Salah"], "correct": "Salah"}, {"label": "C", "text": "Selisih antara tekanan udara di puncak Lawu dan tekanan udara di puncak Gunung Slamet adalah 1,63 cmHg.", "cols": ["Benar", "Salah"], "correct": "Benar"}], "img": "IPA9_30A.png", "note": null, "teacher_note": "Baris B dan C pada dokumen asal menyebut 'Merbabu', tetapi teks bacaan hanya membahas Lawu dan Slamet -- nama gunung dikoreksi agar konsisten dengan teks yang diberikan ke siswa."}]</script>
+<script id="students-data" type="application/json">{"IX A":["ABID AQILA PRANAJA","AFRIAN SAPUTRA","AHMAT KHOIRUL MISBAHUDIN","ALVARO YUNANDA OKTINO","ANISA ANESTIA","ARUMI EKA AYU LESTARI","ASYFA NURFADILA","AZWA KURNIA SAPUTRA","BIMA DWI PUTRA","DEDI SETIAWAN JATI WENING PURNOMO","DEVICA PUTRI ANGGRAINI","DIO MAYVANO","FARA AYU SALSABILA","FEBRIADI SAPUTRA","GALIH ANANDA RACHMAN","KAFA","KEYLA CAHYA ATHALIA","KEZIA AINI ZULAIKA NINGTYAS","MANDA NITIYA AVIANI","MUSTAFIK VARIS MAULANA","MUTIARA AZMEI LISTYOWATI","NADIEN MEUTIARA SUKMA","NAIFATUL ZULFA","NUZZUA REIVA","ODIK TAUFIQURROHMAN","PERMATA MUSTIKA ALVIONITA","QAYYUMU ARUMI MAHARTANIA","RADEN RARA NAYA AULIA ASIH","SATRIA ADYASA NUSANTARA","SELY NUR ASHIFA","WISNU DWI SAPUTRA"],"IX B":["AKBAR KHOIRUL UMAM","ALFINSYA REZA SAPUTRA","ANANDA BAGAS LIYAN SAPUTRA","ARCEINA SEVILLA","ARIFKI EKA PUTRA","ARKA KEVIN DINATA","DEA ISTIQOMAH","DIO NUR FAUZAN","DWI NUR IKSAN","FEBIRA AURELLIA","ILYAS ZULKIFLI","INDIRA PUTRI LISTIKA","JACINDA RUELA MAHSA","KANAYA ALTHAFUNISSA AGUSTIN","KANIA MARSYA OKTAVIANI","LINTANG JA'FAR ABIANDRA","LUTHFI RAMDHAN HIBATULLAH","MEYSYA ALIF NUR FATHONAH","MICO FERNANDO","MUHAMMAD DIFA SAPUTRA","MUHAMMAD FIRNANDA","MUHAMMAD RAFA SAPUTRA","NAILA ALZENA SAFA","NETTISYA NAZWA DIANDHYRA","PUTRI HANI NUR HIDAYATI","RANGGA AQSHAL JOHANSYAH","SRI WULANDARI","SYAFIRA ZAHROTUM MUNIROH","TERA CESIA","ZULFA TANAYA"],"IX C":["AKHMAD THOLIB ABBAS","ALFITA SHOFI NADHIRA","ASKUN ROMADHON","ASYATUN NISWAH","ATAYA AZUAN MEYLANO","AZILA NUR IZZAFITRI","ELDA CHIKMATUR ROCHMAH","ELVIDA LARASATI","EVAN JAMAL MUSTHOFA OZIL","FA'IQ SULTAN AJI","FARAH NAFISA NURANIFAH","FAUZAN ALFAN TAQIYAN","GISSYA AZZAHRA ALTHAFUNNISA","KANAFARO CHRIZTIAN TONY","KANAYA CAHAYA NINGRUM","KEVIN ANGGIE PRATAMA","NABILA FIRANIKA ANINDI","NADHIFA AQILA ZAHWA","NICXO DIMAS SAPUTRA","PUTRI NURAHMI","RAIHAN DAFA AKMAL FAUZI","RETNO KARTIKA SARI","SILVIA AGUSTINA","TEO SAPUTRA","VITO ARDANTA NURROHMAN","WINNIE ALIYA AGASSI","YUSUF SADEWA LANGIT RAMADHAN","ZAHIERA RACHMADHANI","ZAHRA AULIA","ZHIFARA PURI NATASYA","ZIDAN AJI SYAHPUTRA","ZIVANA CARISSA PUTRI"],"IX D":["'ASA NAYLIS SA'DIYYAH","ADHELYA PRIHANDINI TRISTI","ADNAN HAFIZH ABIMANYU","AKILLA CHELSEA FABIONA","ANGELICA KINARIAN KAYANA","ARIFAH ZIYAN SHALIHAH","ARVINO AKBAR PRASETYA","ASYFA JUNO NAUFLAWATI","AXCEYLA DHEA ANGGRAINI","AYRA FAZIA","AZZURA QUEEN PRATAMA","BERLIANTI MANDA SAFIRA","DZAKWAAN FAKHRY AL FATIH","FERDINAND FELIK SAPUTRA","FILZAH SAUSAN NIDA GHASSANI","GAGAS ADE PRATAMA","HENNDAR RADITIYA LUKITO","JESSICA KUMALA DEWI","KEVIN GUSTAVO ARTHADANI BINTANG","LUTHFIYYA ZALFA DWI ALSANI","MUHAMMAD CELLO HARYANTO","MUHAMMAD RAFIQUL HAMIM","NAUFAL PRADITA","RAHELINA APRILLIA PUTRI","RAVA NUR HIDAYAT","RAVI NUR HIDAYAT","RIDWAN ARIS PRADANA","SITI AMINAH","SOFIA KARINA PUTRI","SYAHRUL RAHMAT FADHILAH","TAUFIQ ACHMAD NORCHOLIS","TIFFANO AUGESTA RAHMADAN"],"IX E":["ALIFFIAN NUR RACHMAN","ANINDYA FISKA LARASATI","ARDIANSYAH YUSUF SETIAWAN","DANIS NAZILATUL ULYA","DIRA ANINDITA","DZAKIA NAJAMUDDIN AKBAR","EKA ARDHAN ALFAREZA PUTRA","ELSYA KURNIA MEGA","FAHRI DZUL HILMI","FAREL VALENTINO","ILHAM OKTA PRATAMA","KESYA KURNIA MEGA","KHAISYA NUR KHASANAH","KYLA YAFFA OKTAVIANA","MELA NUR CAHYANI","MUADZ SIDIK HANAFI","MUHAMMAD KELVIN APRILIO","MUHAMMAD ULIN NUHA","MUKTI KHOIRUL HANAFI","NAUFAL RAFI MUSYAFFA","NAYLA AURELLIA PUTRI","NAZZIFA ALMAYSHA NIZRHIINA","NURUL AZKIA","RADHITYA NUR KHUSNA","RENTA SAPTA UTAMA","RESTU ANNAS FADILLAH","RIDZO FITRIANTO","RIFA RIZKI ROFIAH","RIZKI HIDAYATULLOH","SILVIA NAJWA","SRI NITAYANTI"],"IX F":["ALDIAN FAJAR","ALIFAH FALMA FEBYOLA","ALVIN NURRIYAN PUTRANTO","ARSHAVIN RIZALUL HAKIM","CHELSI PUTRI ARDIATRI","CLARA ANGELIA SAPUTRI","FAIRREL APRILLIO AL ZAIN","FAREL ARDIYANSYAH","FELIA PRADIFTA","IVANO DWIANGGA PUTRA","KHANZA AQILLA MAYLIAN","KIKI AMELIA","LIAN DWI ISWARI","MIFTAKHUL SAHRIL HUDA","MOHAMAD HABIB NURROHMAN","MUHAMMAD KAREL","MUHQAMAT AHQNAN SAIFULLOH","NAJWA SYARIFAH ERVIANA","NANO FILZA ALKARIM","NAUFAL FADIL IBRAHIM","NIKE SABRINA ROHMAT","OLIVYA CENDY NURRYLA","RAFA OKTA ADELIO","RAFFASYA NIZAM PRATAMA","RAHELYA AISHA NUR FATONAH","RAUFFI ACHMAD NORCHOLIS","RHEA MECCA ASRIYANTO","RIA ANANDA KARYADI","SETO HARI NUGROHO","VENALIA AISYA FILIANI","ZELDA ARYARAFFI VINDHIGA SAKTI","ZHAHRA ZAIN AULIA"]}</script>
+<script id="embedded-images-data" type="application/json">{}</script>
+<script>
+(function(){
+"use strict";
+
+/* ================= CONFIG ================= */
+const SUBJECT_ORDER = ["Pertumbuhan dan Perkembangan","Sistem Saraf dan Indera","Sistem Reproduksi dan Kesehatan","Tekanan Zat"];
+const DURATION_SEC = 90*60;
+const VALID_TOKEN = "SL9IPA";
+// TODO(guru): paste the Web App URL from your deployed Google Apps Script (see Code.gs) here:
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbze-DlGdj0c68ZTe7LodJJ0ja8r47zgZx_XkNWdo0LibVq-45dyIkC_yUVjpeBBIQHFag/exec";
+
+const RAW_QUESTIONS = JSON.parse(document.getElementById('questions-data').textContent);
+document.getElementById('infoJumlah').textContent = RAW_QUESTIONS.length + " Soal";
+const STUDENTS = JSON.parse(document.getElementById('students-data').textContent);
+const EMBEDDED_IMAGES = JSON.parse(document.getElementById('embedded-images-data').textContent);
+
+/* ================= STATE ================= */
+let examQuestions = [];
+let answers = {};
+let current = 0;
+let violCount = 0;
+let timeLeft = DURATION_SEC;
+let timerHandle = null;
+let studentName = "", studentClass = "";
+let examStarted = false;
+let examFinished = false;
+
+/* ================= UTIL ================= */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function fmtTime(s){ const m=Math.floor(s/60), sec=s%60; return String(m).padStart(2,'0')+":"+String(sec).padStart(2,'0'); }
+function escapeHtml(str){ return String(str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function renderText(t){ return escapeHtml(t).replace(/\n/g,'<br>'); }
+function imgList(img){ if(!img) return []; return Array.isArray(img) ? img : [img]; }
+const QUESTION_IMG_BASE = "../../assets/img/";
+function imgSrc(name){ return EMBEDDED_IMAGES[name] || encodeURI(QUESTION_IMG_BASE + name); }
+
+/* ================= LIGHTBOX (tap-to-zoom for question images) ================= */
+document.getElementById('lightboxClose').addEventListener('click',()=>{
+  document.getElementById('lightbox').classList.remove('open');
+});
+document.getElementById('lightbox').addEventListener('click',(e)=>{
+  if(e.target.id==='lightbox') document.getElementById('lightbox').classList.remove('open');
+});
+
+/* ================= TABS (start screen) ================= */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ================= STUDENT DROPDOWNS ================= */
+(function populateClassDropdown(){
+  const selKelas = document.getElementById('inputKelas');
+  Object.keys(STUDENTS).forEach(kelas=>{
+    const opt = document.createElement('option');
+    opt.value = kelas; opt.textContent = kelas;
+    selKelas.appendChild(opt);
+  });
+  selKelas.addEventListener('change',()=>{
+    const selNama = document.getElementById('inputNama');
+    const kelas = selKelas.value;
+    selNama.innerHTML = '';
+    if(!kelas){
+      const opt = document.createElement('option'); opt.value=''; opt.textContent='— Pilih kelas terlebih dahulu —';
+      selNama.appendChild(opt); selNama.disabled = true; return;
+    }
+    const opt0 = document.createElement('option'); opt0.value=''; opt0.textContent='— Pilih Nama —';
+    selNama.appendChild(opt0);
+    (STUDENTS[kelas]||[]).forEach(nm=>{
+      const opt = document.createElement('option'); opt.value = nm; opt.textContent = nm;
+      selNama.appendChild(opt);
+    });
+    selNama.disabled = false;
+  });
+
+  /* Prefill dari menu Kelas (kelas-9.html): ?kelas=IX%20A&nama=NAMA%20SISWA */
+  const params = new URLSearchParams(window.location.search);
+  const pKelas = params.get('kelas');
+  const pNama = params.get('nama');
+  if(pKelas && STUDENTS[pKelas]){
+    selKelas.value = pKelas;
+    selKelas.dispatchEvent(new Event('change'));
+    if(pNama && STUDENTS[pKelas].includes(pNama)){
+      document.getElementById('inputNama').value = pNama;
+    }
+    document.querySelector('.tab-btn[data-tab="mulai"]').click();
+    document.getElementById('inputToken').focus();
+  }
+})();
+
+/* ================= BUILD EXAM (shuffle) ================= */
+function buildExam(){
+  const all = RAW_QUESTIONS.map((q,i)=>({q,i}));
+  const shuffledAll = shuffle(all);
+  examQuestions = shuffledAll.map(o=>{
+    const q = JSON.parse(JSON.stringify(o.q));
+    q._id = o.i;
+    if((q.type==='pg' || q.type==='multi') && Array.isArray(q.options)){
+      q.options = shuffle(q.options);
+    }
+    return q;
+  });
+}
+
+/* ================= NAV PANEL ================= */
+function renderNavPanel(){
+  const panel = document.getElementById('navPanel');
+  let html = '<h3>Nomor Soal (1–'+examQuestions.length+')</h3>';
+  html += '<div class="legend"><span><i class="dot" style="background:#1a9c5f"></i>Terjawab</span><span><i class="dot" style="background:#fff;border:1.5px solid #dde3ec"></i>Belum</span></div>';
+  let grid = '';
+  examQuestions.forEach((q,idx)=>{
+    const answered = isAnswered(q);
+    grid += '<button class="navbtn'+(answered?' answered':'')+(idx===current?' current':'')+'" data-idx="'+idx+'">'+(idx+1)+'</button>';
+  });
+  html += '<div class="navgrid">'+grid+'</div>';
+  html += '<button id="navSubmitBtn">✅ Kirim Jawaban</button>';
+  panel.innerHTML = html;
+  panel.querySelectorAll('.navbtn').forEach(b=>{
+    b.addEventListener('click',()=>{ current=parseInt(b.dataset.idx,10); renderQuestion(); closeMobilePanel(); });
+  });
+  document.getElementById('navSubmitBtn').addEventListener('click', confirmSubmit);
+}
+function closeMobilePanel(){ document.getElementById('navPanel').classList.remove('open'); }
+
+function isAnswered(q){
+  const v = answers[q._id];
+  if(q.type==='pg') return !!v;
+  if(q.type==='multi') return Array.isArray(v) && v.length>0;
+  if(q.type==='matrix'){ if(!v) return false; return q.rows.every(r=>v[r.label]); }
+  return false;
+}
+
+/* ================= RENDER QUESTION ================= */
+function renderQuestion(){
+  const q = examQuestions[current];
+  const wrap = document.getElementById('qwrap');
+  let html = '';
+  html += '<div class="qnum">Soal '+(current+1)+' dari '+examQuestions.length+'</div>';
+  html += '<div class="qtext">'+renderText(q.text)+'</div>';
+  if(q.arabic){
+    html += '<div class="arabic-block">'+
+      '<div class="ar" dir="rtl" lang="ar">'+escapeHtml(q.arabic.ar)+'</div>'+
+      '</div>';
+  }
+  if(q.note){
+    html += '<div class="qtext" style="margin-top:-6px;">'+renderText(q.note)+'</div>';
+  }
+  const imgs = imgList(q.img);
+  if(imgs.length){
+    html += '<div class="qimg-wrap'+(imgs.length>1?' multi-img':'')+'">';
+    imgs.forEach(name=>{
+      const src = imgSrc(name);
+      html += '<div class="imgbox" data-full="'+src+'">'+
+        '<img src="'+src+'" alt="'+escapeHtml(name)+'" loading="lazy" '+
+        'onerror="this.parentElement.outerHTML=\'<div class=&quot;imgph&quot;>🖼️ '+escapeHtml(name)+'<br>(gambar menyusul dari guru)</div>\'">'+
+        '<span class="zoomhint">🔍 Ketuk untuk perbesar</span></div>';
+    });
+    html += '</div>';
+  }
+  if(q.type==='multi') html += '<div class="qtype-hint">☑ Pilihan Ganda Kompleks — pilih jawaban lebih dari satu</div>';
+  if(q.type==='matrix') html += '<div class="qtype-hint">☑ Pilihan Ganda Kompleks — tentukan jawaban untuk setiap pernyataan</div>';
+
+  if(q.type==='pg') html += renderPG(q);
+  else if(q.type==='multi') html += renderMulti(q);
+  else if(q.type==='matrix') html += renderMatrix(q);
+
+  wrap.innerHTML = html;
+  attachOptionEvents(q);
+  wrap.querySelectorAll('.imgbox').forEach(box=>{
+    box.addEventListener('click',()=>{
+      document.getElementById('lightboxImg').src = box.dataset.full;
+      document.getElementById('lightbox').classList.add('open');
+    });
+  });
+
+  document.getElementById('btnPrev').disabled = (current===0);
+  document.getElementById('btnNext').textContent = (current===examQuestions.length-1) ? 'Selesai →' : 'Selanjutnya →';
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('current', parseInt(b.dataset.idx,10)===current));
+  document.getElementById('questionArea').scrollTop = 0;
+}
+
+const LETTERS = ['A','B','C','D','E','F'];
+
+function renderPG(q){
+  const v = answers[q._id]; let html='';
+  q.options.forEach((opt,i)=>{
+    const selected = v===opt;
+    html += '<label class="option'+(selected?' selected':'')+'"><input type="radio" name="pg" value="'+i+'" '+(selected?'checked':'')+'>'+
+      '<span class="otext"><span class="olabel">'+LETTERS[i]+'.</span>'+escapeHtml(opt)+'</span></label>';
+  });
+  return html;
+}
+function renderMulti(q){
+  const v = answers[q._id] || []; let html='';
+  q.options.forEach((opt,i)=>{
+    const selected = v.includes(opt);
+    html += '<label class="option'+(selected?' selected':'')+'"><input type="checkbox" name="multi" value="'+i+'" '+(selected?'checked':'')+'>'+
+      '<span class="otext"><span class="olabel">'+(i+1)+'.</span>'+escapeHtml(opt)+'</span></label>';
+  });
+  return html;
+}
+function renderMatrix(q){
+  const v = answers[q._id] || {};
+  let html = '<table class="matrix"><thead><tr><th style="text-align:left">Pernyataan</th>';
+  q.rows[0].cols.forEach(c=>{ html += '<th>'+escapeHtml(c)+'</th>'; });
+  html += '</tr></thead><tbody>';
+  q.rows.forEach(r=>{
+    html += '<tr><td class="stmt">'+escapeHtml(r.label)+'. '+escapeHtml(r.text)+'</td>';
+    r.cols.forEach(c=>{
+      const checked = v[r.label]===c;
+      html += '<td><input type="radio" name="row_'+r.label+'" value="'+escapeHtml(c)+'" data-row="'+escapeHtml(r.label)+'" '+(checked?'checked':'')+'></td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  return html;
+}
+function attachOptionEvents(q){
+  if(q.type==='pg'){
+    document.querySelectorAll('input[name=pg]').forEach(inp=>{
+      inp.addEventListener('change',()=>{ answers[q._id]=q.options[parseInt(inp.value,10)]; renderQuestion(); renderNavPanel(); });
+    });
+  } else if(q.type==='multi'){
+    document.querySelectorAll('input[name=multi]').forEach(inp=>{
+      inp.addEventListener('change',()=>{
+        let cur = answers[q._id] ? answers[q._id].slice() : [];
+        const val = q.options[parseInt(inp.value,10)];
+        if(inp.checked){ if(!cur.includes(val)) cur.push(val); } else { cur = cur.filter(x=>x!==val); }
+        answers[q._id]=cur; renderQuestion(); renderNavPanel();
+      });
+    });
+  } else if(q.type==='matrix'){
+    document.querySelectorAll('table.matrix input').forEach(inp=>{
+      inp.addEventListener('change',()=>{
+        const rowLabel = inp.dataset.row;
+        const cur = answers[q._id] ? Object.assign({},answers[q._id]) : {};
+        cur[rowLabel] = inp.value; answers[q._id]=cur; renderQuestion(); renderNavPanel();
+      });
+    });
+  }
+}
+
+/* ================= NAVIGATION ================= */
+document.getElementById('btnPrev').addEventListener('click',()=>{ if(current>0){ current--; renderQuestion(); } });
+document.getElementById('btnNext').addEventListener('click',()=>{
+  if(current<examQuestions.length-1){ current++; renderQuestion(); } else { confirmSubmit(); }
+});
+document.getElementById('panelToggle').addEventListener('click',()=>{ document.getElementById('navPanel').classList.toggle('open'); });
+
+/* ================= TIMER ================= */
+function startTimer(){
+  timerHandle = setInterval(()=>{
+    timeLeft--;
+    const box = document.getElementById('timerBox');
+    box.textContent = fmtTime(Math.max(timeLeft,0));
+    if(timeLeft<=300) box.classList.add('low');
+    if(timeLeft<=0){ clearInterval(timerHandle); finishExam(true); }
+  },1000);
+}
+
+/* ================= FULLSCREEN & ANTI-CHEAT ================= */
+function enterFullscreen(){
+  const el = document.documentElement;
+  const req = el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen;
+  if(req){ req.call(el).catch(()=>{}); }
+}
+function isFullscreen(){ return !!(document.fullscreenElement||document.webkitFullscreenElement||document.msFullscreenElement); }
+function showWarn(title,text,onOk){
+  const ov = document.getElementById('warnOverlay');
+  document.getElementById('warnTitle').textContent = title;
+  document.getElementById('warnText').textContent = text;
+  ov.style.display='flex';
+  document.getElementById('warnBtn').onclick = ()=>{ ov.style.display='none'; if(onOk) onOk(); };
+}
+function logViolation(reason){
+  if(!examStarted || examFinished) return;
+  violCount++;
+  const badge = document.getElementById('violationBadge');
+  badge.style.display='inline-block';
+  document.getElementById('violCount').textContent = violCount;
+  showWarn('⚠ Pelanggaran Terdeteksi ('+violCount+')',
+    'Sistem mendeteksi: '+reason+'. Tindakan ini tercatat dan akan dilaporkan kepada guru bersama hasil ujianmu. Tetaplah pada halaman ujian hingga selesai.',
+    ()=>{ if(!isFullscreen()) enterFullscreen(); });
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden && examStarted && !examFinished) logViolation('berpindah/menyembunyikan tab atau aplikasi lain');
+});
+document.addEventListener('fullscreenchange',()=>{
+  if(!isFullscreen() && examStarted && !examFinished) logViolation('keluar dari mode layar penuh');
+});
+document.addEventListener('contextmenu',e=>{ if(examStarted && !examFinished) e.preventDefault(); });
+document.addEventListener('copy',e=>{ if(examStarted && !examFinished) e.preventDefault(); });
+document.addEventListener('cut',e=>{ if(examStarted && !examFinished) e.preventDefault(); });
+document.addEventListener('keydown',e=>{
+  if(!examStarted || examFinished) return;
+  if(e.key==='F12' || (e.ctrlKey&&e.shiftKey&&['I','J','C'].includes(e.key)) || (e.altKey&&e.key==='Tab')) e.preventDefault();
+  // block print / save shortcuts
+  if(e.ctrlKey && (e.key==='p' || e.key==='P' || e.key==='s' || e.key==='S')) e.preventDefault();
+  // best-effort PrintScreen detection (unreliable across browsers/OS — see note)
+  if(e.key==='PrintScreen'){
+    logViolation('mencoba mengambil tangkapan layar (screenshot)');
+    navigator.clipboard && navigator.clipboard.writeText('').catch(()=>{});
+  }
+});
+document.addEventListener('keyup',e=>{
+  if(!examStarted || examFinished) return;
+  if(e.key==='PrintScreen'){
+    navigator.clipboard && navigator.clipboard.writeText('').catch(()=>{});
+  }
+});
+// blur exam content when the window loses focus (reduces the value of any screen capture taken during a switch)
+window.addEventListener('blur',()=>{
+  if(examStarted && !examFinished) document.getElementById('screen-exam').classList.add('blurred');
+});
+window.addEventListener('focus',()=>{
+  document.getElementById('screen-exam').classList.remove('blurred');
+});
+window.addEventListener('beforeunload',(e)=>{ if(examStarted && !examFinished){ e.preventDefault(); e.returnValue=''; } });
+
+/* ================= START EXAM ================= */
+document.getElementById('btnStart').addEventListener('click',()=>{
+  const token = document.getElementById('inputToken').value.trim();
+  const nama = document.getElementById('inputNama').value.trim();
+  const kelas = document.getElementById('inputKelas').value.trim();
+  const err = document.getElementById('startErr');
+  if(!token){ err.textContent='Token ujian wajib diisi.'; return; }
+  if(token !== VALID_TOKEN){ err.textContent='Token salah. Tanyakan token yang benar kepada gurumu.'; return; }
+  if(!kelas || !nama){ err.textContent='Kelas dan nama wajib dipilih sebelum memulai.'; return; }
+  err.textContent='';
+  studentName = nama; studentClass = kelas;
+  buildExam();
+  answers = {}; current=0; violCount=0; timeLeft=DURATION_SEC; examStarted=true; examFinished=false;
+
+  document.getElementById('screen-start').style.display='none';
+  document.getElementById('screen-exam').style.display='flex';
+  document.getElementById('brandStudent').textContent = nama+' · Kelas '+kelas;
+  renderNavPanel(); renderQuestion(); startTimer(); enterFullscreen();
+});
+
+/* ================= SUBMIT / SCORING (penilaian parsial) ================= */
+function confirmSubmit(){
+  const unansweredIdx = examQuestions.findIndex(q=>!isAnswered(q));
+  if(unansweredIdx !== -1){
+    const unansweredCount = examQuestions.filter(q=>!isAnswered(q)).length;
+    alert('Masih ada '+unansweredCount+' soal yang belum dijawab. Silakan lengkapi semua soal terlebih dahulu sebelum mengirim jawaban. Kamu akan diarahkan ke soal pertama yang belum dijawab.');
+    current = unansweredIdx;
+    renderQuestion(); renderNavPanel(); closeMobilePanel();
+    return;
+  }
+  if(confirm('Semua soal telah dijawab. Kirim jawaban sekarang? Jawaban tidak dapat diubah setelah dikirim.')) finishExam(false);
+}
+
+/* Skor tiap soal berupa PECAHAN 0..1 (bukan hanya benar/salah):
+   - PG biasa: 1 jika tepat, 0 jika tidak.
+   - PG Kompleks (multi) & tabel Benar/Salah (matrix): dinilai PER PERNYATAAN/OPSI.
+     Setiap pernyataan/opsi dianggap satu keputusan Benar/Salah tersendiri; skor
+     soal = (jumlah keputusan yang tepat) / (jumlah total pernyataan/opsi pada
+     soal itu) — sehingga menjawab 3 dari 4 dengan tepat tetap bernilai 75%
+     dari bobot soal tersebut, bukan nol. */
+function questionScoreFraction(q){
+  const v = answers[q._id];
+  if(q.type==='pg'){
+    return v===q.correct ? 1 : 0;
+  }
+  if(q.type==='multi'){
+    const selected = Array.isArray(v) ? v : [];
+    let matches = 0;
+    q.options.forEach(opt=>{
+      const shouldBeSelected = q.correct.includes(opt);
+      const isSelected = selected.includes(opt);
+      if(shouldBeSelected === isSelected) matches++;
+    });
+    return matches / q.options.length;
+  }
+  if(q.type==='matrix'){
+    const ans = v || {};
+    let matches = 0;
+    q.rows.forEach(r=>{ if(ans[r.label]===r.correct) matches++; });
+    return matches / q.rows.length;
+  }
+  return 0;
+}
+// isCorrect: dipertahankan untuk kompatibilitas (mis. ekspor Excel) — soal dianggap
+// "benar penuh" hanya jika skor pecahannya = 1 (semua pernyataan tepat).
+function isCorrect(q){ return questionScoreFraction(q) === 1; }
+
+function finishExam(autoSubmit){
+  examFinished = true;
+  clearInterval(timerHandle);
+  if(isFullscreen()){ (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document); }
+  document.getElementById('screen-exam').style.display='none';
+  document.getElementById('warnOverlay').style.display='none';
+
+  const perSubject = {};
+  SUBJECT_ORDER.forEach(s=>perSubject[s]={earned:0,total:0});
+  let totalEarned=0;
+  examQuestions.forEach(q=>{
+    const frac = questionScoreFraction(q);
+    perSubject[q.subject].total++;
+    perSubject[q.subject].earned += frac;
+    totalEarned += frac;
+  });
+  const totalMaks = examQuestions.length;
+  // Nilai akhir langsung dalam skala 0-100: bobot tiap soal = 100/jumlah soal.
+  const nilaiAkhir = Math.round((totalEarned/totalMaks)*1000)/10;
+  const pct = nilaiAkhir;
+  let grade='D', gradeLabel='Perlu Bimbingan';
+  if(pct>=90){grade='A';gradeLabel='Sangat Baik';}
+  else if(pct>=75){grade='B';gradeLabel='Baik';}
+  else if(pct>=60){grade='C';gradeLabel='Cukup';}
+
+  document.getElementById('resScore').textContent = nilaiAkhir.toFixed(1);
+  document.getElementById('resGrade').textContent = 'Predikat '+grade+' — '+gradeLabel + (autoSubmit?' · waktu habis, jawaban terkirim otomatis':'');
+  document.getElementById('rNama').textContent = studentName;
+  document.getElementById('rKelas').textContent = studentClass;
+  document.getElementById('rViol').textContent = violCount;
+
+  let tbl = '<tr><th>Materi</th><th>Perolehan Poin</th><th>Jumlah Soal</th></tr>';
+  const detailParts = [];
+  SUBJECT_ORDER.forEach(s=>{
+    const earnedStr = perSubject[s].earned.toFixed(2);
+    tbl += '<tr><td>'+escapeHtml(s)+'</td><td>'+earnedStr+'</td><td>'+perSubject[s].total+'</td></tr>';
+    detailParts.push(s+' '+earnedStr+'/'+perSubject[s].total);
+  });
+  document.getElementById('resTable').innerHTML = tbl;
+
+  window._examResult = {
+    nama: studentName, kelas: studentClass, skor: Math.round(totalEarned*100)/100, skorMaks: totalMaks, pct: pct,
+    nilaiAkhir: nilaiAkhir,
+    grade: grade+' ('+gradeLabel+')', detail: detailParts.join(' | ') + ' | Pelanggaran: '+violCount+'x',
+    perSubject: perSubject, violasi: violCount
+  };
+
+  document.getElementById('screen-result').style.display='block';
+  autoSubmitToSheet();
+}
+
+/* ================= GOOGLE APPS SCRIPT AUTO-SUBMIT (real-time to Google Sheets) ================= */
+function setSubmitStatus(state, text){
+  const el = document.getElementById('submitStatus');
+  el.className = 'submit-status '+state;
+  document.getElementById('submitStatusText').textContent = text;
+  document.getElementById('btnRetrySubmit').classList.toggle('hidden', state==='sending');
+}
+function buildAnswerDetail(){
+  return examQuestions.map((q,idx)=>{
+    const v = answers[q._id];
+    let jawaban = '(kosong)';
+    if(q.type==='pg'){ jawaban = v || '(kosong)'; }
+    else if(q.type==='multi'){ jawaban = (v&&v.length) ? v.join(' ; ') : '(kosong)'; }
+    else if(q.type==='matrix'){ jawaban = v ? q.rows.map(r=>r.label+':'+(v[r.label]||'-')).join(' ; ') : '(kosong)'; }
+    return { no: idx+1, subject: q.subject, jawaban: jawaban, skor: Math.round(questionScoreFraction(q)*1000)/1000 };
+  });
+}
+function autoSubmitToSheet(){
+  if(!navigator.onLine){
+    setSubmitStatus('fail','❌ Gagal terkirim — perangkat sedang offline. Sambungkan internet lalu klik "Kirim Ulang".');
+    return;
+  }
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PASTE_YOUR_DEPLOYMENT_ID_HERE')>-1){
+    setSubmitStatus('fail','⚠ URL Google Apps Script belum dipasang oleh guru. Gunakan "Unduh Hasil (Excel)" sebagai cadangan.');
+    return;
+  }
+  setSubmitStatus('sending','Mengirim jawaban ke guru...');
+  const r = window._examResult;
+  const payload = {
+    timestamp: new Date().toISOString(),
+    nama: r.nama, kelas: r.kelas, skor: r.skor, skorMaks: r.skorMaks, persentase: r.pct,
+    grade: r.grade, pelanggaran: r.violasi, detailPerMapel: r.detail,
+    jawaban: buildAnswerDetail()
+  };
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST', mode: 'no-cors',
+    headers: {'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload)
+  }).then(()=>{
+    setSubmitStatus('ok','✅ Jawaban berhasil terkirim ke Google Spreadsheet guru.');
+  }).catch(()=>{
+    setSubmitStatus('fail','❌ Gagal terkirim (masalah jaringan). Klik "Kirim Ulang" untuk mencoba lagi.');
+  });
+}
+document.getElementById('btnRetrySubmit').addEventListener('click', autoSubmitToSheet);
+
+/* ================= EXCEL EXPORT (backup) ================= */
+document.getElementById('btnExcel').addEventListener('click',()=>{
+  const r = window._examResult;
+  const rows = [];
+  rows.push(['Nama','Kelas','No','Materi','Soal','Jawaban Siswa','Kunci Jawaban','Skor Soal (0-1)','Bobot Soal (poin)','Poin Diperoleh']);
+  function answerLabel(q){
+    if(q.type==='pg') return q.correct;
+    if(q.type==='multi') return q.correct.join(' ; ');
+    if(q.type==='matrix') return q.rows.map(row=>row.label+':'+row.correct).join(' ; ');
+    return '';
+  }
+  const bobotSoal = Math.round((100/examQuestions.length)*100)/100;
+  examQuestions.forEach((q,idx)=>{
+    let jawabanSiswa='';
+    const v = answers[q._id];
+    if(q.type==='pg'){ jawabanSiswa = v || '(kosong)'; }
+    else if(q.type==='multi'){ jawabanSiswa = (v&&v.length)? v.join(' ; ') : '(kosong)'; }
+    else if(q.type==='matrix'){ jawabanSiswa = v ? q.rows.map(row=>row.label+':'+(v[row.label]||'-')).join(' ; ') : '(kosong)'; }
+    const shortText = q.text.replace(/\s+/g,' ').slice(0,80)+'...';
+    const frac = questionScoreFraction(q);
+    const fracRounded = Math.round(frac*1000)/1000;
+    const poin = Math.round(frac*bobotSoal*100)/100;
+    rows.push([r.nama, r.kelas, idx+1, q.subject, shortText, jawabanSiswa, answerLabel(q), fracRounded, bobotSoal, poin]);
+  });
+  rows.push([]);
+  rows.push(['Catatan: Untuk soal Pilihan Ganda Kompleks & tabel Benar/Salah, "Skor Soal" dihitung per pernyataan/opsi (jumlah pernyataan yang dijawab benar dibagi total pernyataan pada soal itu).']);
+  rows.push([]);
+  rows.push(['RINGKASAN']);
+  rows.push(['Nama','Kelas','Nilai Akhir (0-100)','Grade','Pelanggaran']);
+  rows.push([r.nama, r.kelas, r.nilaiAkhir, r.grade, r.violasi]);
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:18},{wch:8},{wch:5},{wch:22},{wch:60},{wch:30},{wch:30},{wch:12},{wch:12},{wch:12}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Hasil ASTS IPA Kelas 9');
+  const fname = 'Hasil_ASTS_IPA9_'+r.nama.replace(/[^a-zA-Z0-9]/g,'_')+'.xlsx';
+  XLSX.writeFile(wb, fname);
+});
+
+})();
+</script>
 </body>
 </html>

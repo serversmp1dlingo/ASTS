@@ -213,7 +213,8 @@
       <ol class="instr-list">
         <li>Masukkan token ujian, pilih kelas, dan pilih nama pada tab "Mulai Ujian" sebelum memulai.</li>
         <li>Bacalah setiap butir soal dengan cermat sebelum menjawab.</li>
-        <li>Terdapat soal Pilihan Ganda (pilih satu jawaban) dan Pilihan Ganda Kompleks (pilih jawaban lebih dari satu, atau isi tabel Benar/Salah, sesuai instruksi pada tiap soal).</li>
+        <li>Terdapat soal Pilihan Ganda (pilih satu jawaban), Pilihan Ganda Kompleks (pilih jawaban lebih dari satu), dan Benar/Salah (isi tabel Benar/Salah untuk setiap pernyataan), sesuai instruksi pada tiap soal.</li>
+        <li>Khusus soal Pilihan Ganda Kompleks dan Benar/Salah, setiap opsi/pernyataan (4 buah per soal) dinilai secara terpisah — jawaban yang benar sebagian tetap mendapat nilai sebagian, bukan nol.</li>
         <li>Ujian akan tampil dalam mode layar penuh (fullscreen) sejak dimulai.</li>
         <li>Jangan membuka tab atau aplikasi lain — sistem akan mencatat setiap pelanggaran.</li>
         <li>Waktu berjalan otomatis selama 90 menit dan tidak dapat dijeda.</li>
@@ -664,19 +665,42 @@ function confirmSubmit(){
   }
   if(confirm('Semua soal telah dijawab. Kirim jawaban sekarang? Jawaban tidak dapat diubah setelah dikirim.')) finishExam(false);
 }
-function gradeMatrix(q, v){ if(!v) return false; return q.rows.every(r=>v[r.label]===r.correct); }
-function gradeMulti(q, v){
-  if(!Array.isArray(v)) return false;
-  const c = q.correct.slice().sort(); const s = v.slice().sort();
-  return c.length===s.length && c.every((x,i)=>x===s[i]);
-}
-function isCorrect(q){
+/* ================= PENILAIAN PARSIAL =================
+   PG           : skor soal = bobot penuh jika benar, 0 jika salah.
+   PG Kompleks  : setiap opsi (4 opsi) dinilai sendiri-sendiri —
+                  benar jika status centang siswa (dicentang/tidak) sesuai kunci.
+                  fraksi = (jumlah opsi tepat) / (jumlah opsi).
+   Benar/Salah  : setiap pernyataan (4 pernyataan) dinilai sendiri-sendiri.
+                  fraksi = (jumlah pernyataan tepat) / (jumlah pernyataan).
+   Bobot tiap soal = 100 / jumlah soal. Skor akhir = jumlah seluruh (bobot × fraksi). */
+function bobotPerSoal(){ return 100/examQuestions.length; }
+function itemScoreDetail(q){
   const v = answers[q._id];
-  if(q.type==='pg') return v===q.correct;
-  if(q.type==='multi') return gradeMulti(q,v);
-  if(q.type==='matrix') return gradeMatrix(q,v);
-  return false;
+  if(q.type==='pg'){
+    const benar = v===q.correct;
+    return {fraction: benar?1:0, correctCount: benar?1:0, totalItems:1};
+  }
+  if(q.type==='multi'){
+    const correctSet = new Set(q.correct);
+    const selected = new Set(Array.isArray(v)?v:[]);
+    let right=0;
+    q.options.forEach(opt=>{
+      const should = correctSet.has(opt);
+      const is = selected.has(opt);
+      if(should===is) right++;
+    });
+    return {fraction: right/q.options.length, correctCount: right, totalItems:q.options.length};
+  }
+  if(q.type==='matrix'){
+    const vv = v||{};
+    let right=0;
+    q.rows.forEach(r=>{ if(vv[r.label]===r.correct) right++; });
+    return {fraction: right/q.rows.length, correctCount: right, totalItems:q.rows.length};
+  }
+  return {fraction:0, correctCount:0, totalItems:1};
 }
+function questionPoin(q){ return bobotPerSoal() * itemScoreDetail(q).fraction; }
+function isFullyCorrect(q){ return itemScoreDetail(q).fraction === 1; }
 
 function finishExam(autoSubmit){
   examFinished = true;
@@ -685,36 +709,41 @@ function finishExam(autoSubmit){
   document.getElementById('screen-exam').style.display='none';
   document.getElementById('warnOverlay').style.display='none';
 
+  const bobot = bobotPerSoal();
   const perSubject = {};
-  SUBJECT_ORDER.forEach(s=>perSubject[s]={correct:0,total:0});
-  let totalCorrect=0;
+  SUBJECT_ORDER.forEach(s=>perSubject[s]={poin:0,maks:0});
+  let totalPoin=0;
   examQuestions.forEach(q=>{
-    perSubject[q.subject].total++;
-    if(isCorrect(q)){ perSubject[q.subject].correct++; totalCorrect++; }
+    const p = questionPoin(q);
+    perSubject[q.subject].poin += p;
+    perSubject[q.subject].maks += bobot;
+    totalPoin += p;
   });
-  const totalMaks = examQuestions.length;
-  const pct = Math.round((totalCorrect/totalMaks)*1000)/10;
+  const skorAkhir = Math.round(totalPoin*100)/100;
+  const pct = skorAkhir;
   let grade='D', gradeLabel='Perlu Bimbingan';
   if(pct>=90){grade='A';gradeLabel='Sangat Baik';}
   else if(pct>=75){grade='B';gradeLabel='Baik';}
   else if(pct>=60){grade='C';gradeLabel='Cukup';}
 
-  document.getElementById('resScore').textContent = totalCorrect+' / '+totalMaks+'  ('+pct+'%)';
+  document.getElementById('resScore').textContent = skorAkhir+' / 100';
   document.getElementById('resGrade').textContent = 'Predikat '+grade+' — '+gradeLabel + (autoSubmit?' · waktu habis, jawaban terkirim otomatis':'');
   document.getElementById('rNama').textContent = studentName;
   document.getElementById('rKelas').textContent = studentClass;
   document.getElementById('rViol').textContent = violCount;
 
-  let tbl = '<tr><th>Materi</th><th>Benar</th><th>Total</th></tr>';
+  let tbl = '<tr><th>Materi</th><th>Perolehan Skor</th><th>Skor Maksimal</th></tr>';
   const detailParts = [];
   SUBJECT_ORDER.forEach(s=>{
-    tbl += '<tr><td>'+escapeHtml(s)+'</td><td>'+perSubject[s].correct+'</td><td>'+perSubject[s].total+'</td></tr>';
-    detailParts.push(s+' '+perSubject[s].correct+'/'+perSubject[s].total);
+    const poin = Math.round(perSubject[s].poin*100)/100;
+    const maks = Math.round(perSubject[s].maks*100)/100;
+    tbl += '<tr><td>'+escapeHtml(s)+'</td><td>'+poin+'</td><td>'+maks+'</td></tr>';
+    detailParts.push(s+' '+poin+'/'+maks);
   });
   document.getElementById('resTable').innerHTML = tbl;
 
   window._examResult = {
-    nama: studentName, kelas: studentClass, skor: totalCorrect, skorMaks: totalMaks, pct: pct,
+    nama: studentName, kelas: studentClass, skor: skorAkhir, skorMaks: 100, pct: pct,
     grade: grade+' ('+gradeLabel+')', detail: detailParts.join(' | ') + ' | Pelanggaran: '+violCount+'x',
     perSubject: perSubject, violasi: violCount
   };
@@ -731,13 +760,16 @@ function setSubmitStatus(state, text){
   document.getElementById('btnRetrySubmit').classList.toggle('hidden', state==='sending');
 }
 function buildAnswerDetail(){
+  const bobot = bobotPerSoal();
   return examQuestions.map((q,idx)=>{
     const v = answers[q._id];
     let jawaban = '(kosong)';
     if(q.type==='pg'){ jawaban = v || '(kosong)'; }
     else if(q.type==='multi'){ jawaban = (v&&v.length) ? v.join(' ; ') : '(kosong)'; }
     else if(q.type==='matrix'){ jawaban = v ? q.rows.map(r=>r.label+':'+(v[r.label]||'-')).join(' ; ') : '(kosong)'; }
-    return { no: idx+1, subject: q.subject, jawaban: jawaban, benar: isCorrect(q) ? 1 : 0 };
+    const d = itemScoreDetail(q);
+    const poin = Math.round(bobot*d.fraction*100)/100;
+    return { no: idx+1, subject: q.subject, jawaban: jawaban, benar: d.fraction===1?1:0, benarDari: d.correctCount+'/'+d.totalItems, poin: poin };
   });
 }
 function autoSubmitToSheet(){
@@ -772,8 +804,9 @@ document.getElementById('btnRetrySubmit').addEventListener('click', autoSubmitTo
 /* ================= EXCEL EXPORT (backup) ================= */
 document.getElementById('btnExcel').addEventListener('click',()=>{
   const r = window._examResult;
+  const bobot = bobotPerSoal();
   const rows = [];
-  rows.push(['Nama','Kelas','No','Materi','Soal','Jawaban Siswa','Kunci Jawaban','Skor']);
+  rows.push(['Nama','Kelas','No','Materi','Soal','Jawaban Siswa','Kunci Jawaban','Benar dari','Poin (skala 100)']);
   function answerLabel(q){
     if(q.type==='pg') return q.correct;
     if(q.type==='multi') return q.correct.join(' ; ');
@@ -787,15 +820,17 @@ document.getElementById('btnExcel').addEventListener('click',()=>{
     else if(q.type==='multi'){ jawabanSiswa = (v&&v.length)? v.join(' ; ') : '(kosong)'; }
     else if(q.type==='matrix'){ jawabanSiswa = v ? q.rows.map(row=>row.label+':'+(v[row.label]||'-')).join(' ; ') : '(kosong)'; }
     const shortText = q.text.replace(/\s+/g,' ').slice(0,80)+'...';
-    rows.push([r.nama, r.kelas, idx+1, q.subject, shortText, jawabanSiswa, answerLabel(q), isCorrect(q)?1:0]);
+    const d = itemScoreDetail(q);
+    const poin = Math.round(bobot*d.fraction*100)/100;
+    rows.push([r.nama, r.kelas, idx+1, q.subject, shortText, jawabanSiswa, answerLabel(q), d.correctCount+'/'+d.totalItems, poin]);
   });
   rows.push([]);
   rows.push(['RINGKASAN']);
-  rows.push(['Nama','Kelas','Skor','Skor Maksimal','Persentase','Grade','Pelanggaran']);
-  rows.push([r.nama, r.kelas, r.skor, r.skorMaks, r.pct+'%', r.grade, r.violasi]);
+  rows.push(['Nama','Kelas','Skor Akhir (0-100)','Grade','Pelanggaran']);
+  rows.push([r.nama, r.kelas, r.skor, r.grade, r.violasi]);
 
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{wch:18},{wch:8},{wch:5},{wch:22},{wch:60},{wch:30},{wch:30},{wch:6}];
+  ws['!cols'] = [{wch:18},{wch:8},{wch:5},{wch:22},{wch:60},{wch:30},{wch:30},{wch:10},{wch:12}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Hasil ASTS IPS');
   const fname = 'Hasil_ASTS_IPS_'+r.nama.replace(/[^a-zA-Z0-9]/g,'_')+'.xlsx';

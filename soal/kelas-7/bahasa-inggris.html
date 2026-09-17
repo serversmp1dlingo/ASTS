@@ -207,7 +207,7 @@
       <div class="info-grid">
         <div><b id="infoJumlah">40 Soal</b><span>Pilihan Ganda, Benar/Salah &amp; PG Kompleks</span></div>
         <div><b>90 Menit</b><span>Alokasi waktu pengerjaan</span></div>
-        <div><b>2 Materi</b><span>Seni Rupa (Perspektif, Ilustrasi &amp; Lukisan Suasana), Seni Musik (Unsur Musik &amp; Lagu Daerah)</span></div>
+        <div><b>2 Materi</b><span>Expressions (Greeting, Apologizing, Thanking &amp; Leave-Taking), Self-Introduction, Family &amp; Spelling Names</span></div>
         <div><b>Acak Soal</b><span>Urutan soal &amp; opsi diacak</span></div>
       </div>
       <p style="font-size:13.5px;color:#33404f;margin:0 0 8px;font-weight:700;">Petunjuk Pengerjaan:</p>
@@ -313,7 +313,7 @@
 "use strict";
 
 /* ================= CONFIG ================= */
-const SUBJECT_ORDER = ["Seni Rupa: Perspektif, Ilustrasi & Lukisan Suasana","Seni Musik: Unsur Musik & Lagu Daerah"];
+const SUBJECT_ORDER = ["Expressions: Greeting, Apologizing, Thanking & Leave-Taking","Self-Introduction, Family & Spelling Names"];
 const DURATION_SEC = 90*60;
 const VALID_TOKEN = "TIR7IG";
 // TODO(guru): paste the Web App URL from your deployed Google Apps Script (see Code.gs) here:
@@ -833,8 +833,8 @@ document.getElementById('btnExcel').addEventListener('click',()=>{
   const ws = XLSX.utils.aoa_to_sheet(rows);
   ws['!cols'] = [{wch:18},{wch:8},{wch:5},{wch:22},{wch:60},{wch:30},{wch:30},{wch:10},{wch:12}];
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Hasil ASTS Seni Budaya');
-  const fname = 'Hasil_ASTS_SeniBudaya_'+r.nama.replace(/[^a-zA-Z0-9]/g,'_')+'.xlsx';
+  XLSX.utils.book_append_sheet(wb, ws, 'Hasil ASTS Bahasa Inggris');
+  const fname = 'Hasil_ASTS_BahasaInggris_'+r.nama.replace(/[^a-zA-Z0-9]/g,'_')+'.xlsx';
   XLSX.writeFile(wb, fname);
 });
 

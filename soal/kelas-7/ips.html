@@ -218,7 +218,7 @@
         <li>Ujian akan tampil dalam mode layar penuh (fullscreen) sejak dimulai.</li>
         <li>Jangan membuka tab atau aplikasi lain — sistem akan mencatat setiap pelanggaran.</li>
         <li>Waktu berjalan otomatis selama 90 menit dan tidak dapat dijeda.</li>
-        <li>Jawaban <b>baru dapat dikirim setelah minimal 50 menit</b> pengerjaan. Jika menekan "Kirim Jawaban" sebelum 50 menit, sistem akan menampilkan peringatan dan jawaban tidak terkirim.</li>
+        <li>Jawaban <b>baru dapat dikirim setelah minimal 45 menit</b> pengerjaan. Jika menekan "Kirim Jawaban" sebelum 45 menit, sistem akan menampilkan peringatan dan jawaban tidak terkirim.</li>
         <li>Gunakan panel navigasi soal untuk melompat ke nomor soal tertentu dan memantau soal yang sudah/belum dijawab.</li>
         <li>Tekan "Kirim Jawaban" setelah selesai. Jika pengiriman gagal, gunakan tombol "Kirim Ulang" yang akan muncul otomatis.</li>
       </ol>
@@ -236,7 +236,7 @@
         • Ujian akan tampil dalam mode <b>layar penuh (fullscreen)</b>.<br>
         • Jangan membuka tab/aplikasi lain selama ujian — sistem akan mencatat pelanggaran.<br>
         • Waktu berjalan otomatis dan tidak dapat dijeda. Ujian akan terkirim otomatis saat waktu habis.<br>
-        • Jawaban <b>tidak dapat dikirim sebelum 50 menit</b> pengerjaan. Gunakan waktu untuk memeriksa kembali jawabanmu.<br>
+        • Jawaban <b>tidak dapat dikirim sebelum 45 menit</b> pengerjaan. Gunakan waktu untuk memeriksa kembali jawabanmu.<br>
         • Pastikan koneksi internet stabil agar hasil dapat terkirim ke guru secara real-time.<br>
         • Layar akan mengabur otomatis dan pelanggaran tercatat jika kamu mencoba keluar layar, menyalin teks, atau mengambil tangkapan layar (screenshot).
       </div>
@@ -316,7 +316,7 @@
 /* ================= CONFIG ================= */
 const SUBJECT_ORDER = ["Letak dan Peta Wilayah Indonesia","Interaksi Sosial dan Bentuk Kerja Sama"];
 const DURATION_SEC = 90*60;
-const MIN_SUBMIT_SEC = 50*60;   // batas minimal waktu pengerjaan sebelum jawaban boleh dikirim (50 menit)
+const MIN_SUBMIT_SEC = 45*60;   // batas minimal waktu pengerjaan sebelum jawaban boleh dikirim (45 menit)
 const VALID_TOKEN = "PS7DRM";
 // TODO(guru): paste the Web App URL from your deployed Google Apps Script (see Code.gs) here:
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-a7f5JwnLtZJtXdW2hV7UeRHDHQOzpOm8mepmbF_lZ7bLnt8zo1LjYqMK7__l_JTwLw/exec";
@@ -659,7 +659,7 @@ document.getElementById('btnStart').addEventListener('click',()=>{
 
 /* ================= SUBMIT / SCORING ================= */
 function confirmSubmit(){
-  /* ---- Batas minimal waktu pengiriman: 50 menit ---- */
+  /* ---- Batas minimal waktu pengiriman: 45 menit ---- */
   const elapsedSec = Math.floor((Date.now() - examStartTime) / 1000);
   if(elapsedSec < MIN_SUBMIT_SEC){
     const remainSec = MIN_SUBMIT_SEC - elapsedSec;

@@ -207,7 +207,7 @@
       <div class="info-grid">
         <div><b id="infoJumlah">40 Soal</b><span>Pilihan Ganda, Benar/Salah &amp; PG Kompleks</span></div>
         <div><b>90 Menit</b><span>Alokasi waktu pengerjaan</span></div>
-        <div><b>2 Materi</b><span>Seni Rupa (Perspektif, Ilustrasi &amp; Lukisan Suasana), Seni Musik (Unsur Musik &amp; Lagu Daerah)</span></div>
+        <div><b>2 Materi</b><span>Sejarah Perumusan Pancasila, Pengamalan Nilai-Nilai Pancasila</span></div>
         <div><b>Acak Soal</b><span>Urutan soal &amp; opsi diacak</span></div>
       </div>
       <p style="font-size:13.5px;color:#33404f;margin:0 0 8px;font-weight:700;">Petunjuk Pengerjaan:</p>
@@ -313,7 +313,7 @@
 "use strict";
 
 /* ================= CONFIG ================= */
-const SUBJECT_ORDER = ["Seni Rupa: Perspektif, Ilustrasi & Lukisan Suasana","Seni Musik: Unsur Musik & Lagu Daerah"];
+const SUBJECT_ORDER = ["Sejarah Perumusan Pancasila","Pengamalan Nilai-Nilai Pancasila"];
 const DURATION_SEC = 90*60;
 const VALID_TOKEN = "GW7PPS";
 // TODO(guru): paste the Web App URL from your deployed Google Apps Script (see Code.gs) here:
@@ -716,6 +716,7 @@ function finishExam(autoSubmit){
   let totalPoin=0;
   examQuestions.forEach(q=>{
     const p = questionPoin(q);
+    if(!perSubject[q.subject]){ perSubject[q.subject]={poin:0,maks:0}; } // pengaman jika subject tidak terdaftar di SUBJECT_ORDER
     perSubject[q.subject].poin += p;
     perSubject[q.subject].maks += bobot;
     totalPoin += p;
@@ -833,8 +834,8 @@ document.getElementById('btnExcel').addEventListener('click',()=>{
   const ws = XLSX.utils.aoa_to_sheet(rows);
   ws['!cols'] = [{wch:18},{wch:8},{wch:5},{wch:22},{wch:60},{wch:30},{wch:30},{wch:10},{wch:12}];
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Hasil ASTS Seni Budaya');
-  const fname = 'Hasil_ASTS_SeniBudaya_'+r.nama.replace(/[^a-zA-Z0-9]/g,'_')+'.xlsx';
+  XLSX.utils.book_append_sheet(wb, ws, 'Hasil ASTS Pend. Pancasila');
+  const fname = 'Hasil_ASTS_PendPancasila_'+r.nama.replace(/[^a-zA-Z0-9]/g,'_')+'.xlsx';
   XLSX.writeFile(wb, fname);
 });
 

@@ -218,6 +218,7 @@
         <li>Ujian akan tampil dalam mode layar penuh (fullscreen) sejak dimulai.</li>
         <li>Jangan membuka tab atau aplikasi lain — sistem akan mencatat setiap pelanggaran.</li>
         <li>Waktu berjalan otomatis selama 90 menit dan tidak dapat dijeda.</li>
+        <li>Jawaban <b>baru dapat dikirim setelah minimal 60 menit</b> pengerjaan. Jika menekan "Kirim Jawaban" sebelum 60 menit, sistem akan menampilkan peringatan dan jawaban tidak terkirim.</li>
         <li>Gunakan panel navigasi soal untuk melompat ke nomor soal tertentu dan memantau soal yang sudah/belum dijawab.</li>
         <li>Tekan "Kirim Jawaban" setelah selesai. Jika pengiriman gagal, gunakan tombol "Kirim Ulang" yang akan muncul otomatis.</li>
       </ol>
@@ -235,6 +236,7 @@
         • Ujian akan tampil dalam mode <b>layar penuh (fullscreen)</b>.<br>
         • Jangan membuka tab/aplikasi lain selama ujian — sistem akan mencatat pelanggaran.<br>
         • Waktu berjalan otomatis dan tidak dapat dijeda. Ujian akan terkirim otomatis saat waktu habis.<br>
+        • Jawaban <b>tidak dapat dikirim sebelum 60 menit</b> pengerjaan. Gunakan waktu untuk memeriksa kembali jawabanmu.<br>
         • Pastikan koneksi internet stabil agar hasil dapat terkirim ke guru secara real-time.<br>
         • Layar akan mengabur otomatis dan pelanggaran tercatat jika kamu mencoba keluar layar, menyalin teks, atau mengambil tangkapan layar (screenshot).
       </div>
@@ -314,6 +316,7 @@
 /* ================= CONFIG ================= */
 const SUBJECT_ORDER = ["Permainan Sepak Bola","Permainan Bola Basket","Permainan Tradisional: Gobak Sodor"];
 const DURATION_SEC = 90*60;
+const MIN_SUBMIT_SEC = 60*60;   // batas minimal waktu pengerjaan sebelum jawaban boleh dikirim (60 menit)
 const VALID_TOKEN = "AGR7PJ";
 // TODO(guru): paste the Web App URL from your deployed Google Apps Script (see Code.gs) here:
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxP5KTT_ozLu8eP1sa-nA6XaVJFl6NIozlUFGBWoLseQQ44a7fZh5VMr6BVM0GnCpMgpA/exec";
@@ -330,6 +333,7 @@ let current = 0;
 let violCount = 0;
 let timeLeft = DURATION_SEC;
 let timerHandle = null;
+let examStartTime = 0;          // waktu (ms) saat siswa menekan tombol Mulai
 let studentName = "", studentClass = "";
 let examStarted = false;
 let examFinished = false;
@@ -645,7 +649,7 @@ document.getElementById('btnStart').addEventListener('click',()=>{
   err.textContent='';
   studentName = nama; studentClass = kelas;
   buildExam();
-  answers = {}; current=0; violCount=0; timeLeft=DURATION_SEC; examStarted=true; examFinished=false;
+  answers = {}; current=0; violCount=0; timeLeft=DURATION_SEC; examStartTime=Date.now(); examStarted=true; examFinished=false;
 
   document.getElementById('screen-start').style.display='none';
   document.getElementById('screen-exam').style.display='flex';
@@ -655,6 +659,17 @@ document.getElementById('btnStart').addEventListener('click',()=>{
 
 /* ================= SUBMIT / SCORING ================= */
 function confirmSubmit(){
+  /* ---- Batas minimal waktu pengiriman: 60 menit ---- */
+  const elapsedSec = Math.floor((Date.now() - examStartTime) / 1000);
+  if(elapsedSec < MIN_SUBMIT_SEC){
+    const remainSec = MIN_SUBMIT_SEC - elapsedSec;
+    showWarn('⏳ Belum Bisa Mengirim Jawaban',
+      'Jawaban baru dapat dikirim setelah minimal '+(MIN_SUBMIT_SEC/60)+' menit pengerjaan. '+
+      'Kamu baru mengerjakan selama '+fmtTime(elapsedSec)+' (menit:detik). '+
+      'Silakan periksa kembali jawabanmu. Pengiriman baru dapat dilakukan sekitar '+fmtTime(remainSec)+' lagi.');
+    closeMobilePanel();
+    return;
+  }
   const unansweredIdx = examQuestions.findIndex(q=>!isAnswered(q));
   if(unansweredIdx !== -1){
     const unansweredCount = examQuestions.filter(q=>!isAnswered(q)).length;

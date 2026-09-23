@@ -637,6 +637,36 @@ window.addEventListener('focus',()=>{
 });
 window.addEventListener('beforeunload',(e)=>{ if(examStarted && !examFinished){ e.preventDefault(); e.returnValue=''; } });
 
+// ---- Deteksi mode Split-Screen / Multi-Window (khusus HP & tablet) ----
+// Best-effort: memakai perbandingan ukuran viewport terhadap ukuran layar fisik.
+// Saat HP masuk mode split-screen (dua aplikasi berbagi layar), lebar ATAU tinggi
+// jendela browser akan menyusut signifikan dibanding ukuran layar penuh.
+// Dikecualikan saat keyboard virtual aktif (fokus di input/textarea), karena keyboard
+// juga mengecilkan tinggi viewport tapi BUKAN indikasi split-screen.
+let splitScreenTimer = null;
+function checkSplitScreen(){
+  if(!examStarted || examFinished) return;
+  const tag = document.activeElement && document.activeElement.tagName;
+  if(tag==='INPUT' || tag==='TEXTAREA') return; // keyboard virtual, bukan split-screen
+  const screenW = window.screen.width || window.innerWidth;
+  const screenH = window.screen.height || window.innerHeight;
+  const widthRatio = window.innerWidth / screenW;
+  const heightRatio = window.innerHeight / screenH;
+  if(widthRatio < 0.65 || heightRatio < 0.55){
+    logViolation('layar terdeteksi dalam mode split-screen / berbagi layar dengan aplikasi lain');
+  }
+}
+window.addEventListener('resize', ()=>{
+  clearTimeout(splitScreenTimer);
+  splitScreenTimer = setTimeout(checkSplitScreen, 450);
+});
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', ()=>{
+    clearTimeout(splitScreenTimer);
+    splitScreenTimer = setTimeout(checkSplitScreen, 450);
+  });
+}
+
 /* ================= START EXAM ================= */
 document.getElementById('btnStart').addEventListener('click',()=>{
   const token = document.getElementById('inputToken').value.trim();
@@ -655,6 +685,7 @@ document.getElementById('btnStart').addEventListener('click',()=>{
   document.getElementById('screen-exam').style.display='flex';
   document.getElementById('brandStudent').textContent = nama+' · Kelas '+kelas;
   renderNavPanel(); renderQuestion(); startTimer(); enterFullscreen();
+  setTimeout(checkSplitScreen, 800); // cek kondisi split-screen begitu ujian dimulai
 });
 
 /* ================= SUBMIT / SCORING ================= */

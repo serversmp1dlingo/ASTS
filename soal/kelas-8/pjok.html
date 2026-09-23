@@ -636,6 +636,39 @@ window.addEventListener('focus',()=>{
   document.getElementById('screen-exam').classList.remove('blurred');
 });
 window.addEventListener('beforeunload',(e)=>{ if(examStarted && !examFinished){ e.preventDefault(); e.returnValue=''; } });
+/* ================= DETEKSI SPLIT-SCREEN / MULTI-WINDOW (HP & TABLET) ================= */
+// Catatan penting: browser TIDAK bisa mencegah OS mengaktifkan mode split-screen secara
+// langsung (ini kontrol level sistem operasi, di luar jangkauan halaman web). Yang bisa
+// dilakukan adalah MENDETEKSI ukuran jendela yang mengecil secara mencurigakan (ciri khas
+// split-screen/multi-window di Android & iPad) lalu memperlakukannya sebagai pelanggaran,
+// sama seperti saat siswa keluar dari mode layar penuh.
+let baseViewport = null;
+function captureBaseViewport(){
+  if(isFullscreen()){ baseViewport = { w: window.innerWidth, h: window.innerHeight }; }
+}
+document.addEventListener('fullscreenchange', captureBaseViewport);
+let splitScreenTimer = null;
+function checkSplitScreen(){
+  if(!examStarted || examFinished || !baseViewport) return;
+  const w = window.innerWidth, h = window.innerHeight;
+  const screenW = window.screen.width || w, screenH = window.screen.height || h;
+  // jendela browser jauh lebih kecil dari layar fisik perangkat -> indikasi split-screen
+  const widthRatio  = w / screenW;
+  const heightRatio = h / screenH;
+  const shrunk = widthRatio < 0.75 || heightRatio < 0.75;
+  if(shrunk){
+    logViolation('layar terindikasi dibagi (split-screen) atau ukuran jendela diubah');
+  }
+}
+window.addEventListener('resize', ()=>{
+  clearTimeout(splitScreenTimer);
+  splitScreenTimer = setTimeout(checkSplitScreen, 400);
+});
+window.addEventListener('orientationchange', ()=>{
+  clearTimeout(splitScreenTimer);
+  splitScreenTimer = setTimeout(checkSplitScreen, 500);
+});
+
 
 /* ================= START EXAM ================= */
 document.getElementById('btnStart').addEventListener('click',()=>{

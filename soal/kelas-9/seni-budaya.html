@@ -315,7 +315,7 @@
 "use strict";
 
 /* ================= CONFIG ================= */
-const SUBJECT_ORDER = ["Seni Rupa: Perspektif, Ilustrasi & Lukisan Suasana","Seni Musik: Unsur Musik & Lagu Daerah"];
+const SUBJECT_ORDER = ["Menggambar & Melukis Digital","Desain Poster & Dekorasi Pameran"];
 const DURATION_SEC = 90*60;
 const MIN_SUBMIT_SEC = 45*60;   // batas minimal waktu pengerjaan sebelum jawaban boleh dikirim (45 menit)
 const VALID_TOKEN = "SBY9ZH";
@@ -731,6 +731,7 @@ function finishExam(autoSubmit){
   let totalPoin=0;
   examQuestions.forEach(q=>{
     const p = questionPoin(q);
+    if(!perSubject[q.subject]){ perSubject[q.subject]={poin:0,maks:0}; } // pengaman jika subject tidak terdaftar di SUBJECT_ORDER
     perSubject[q.subject].poin += p;
     perSubject[q.subject].maks += bobot;
     totalPoin += p;
